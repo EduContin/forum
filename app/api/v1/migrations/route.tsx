@@ -8,23 +8,29 @@ async function runMigrations(shouldDryRun: boolean) {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  const dbClient = await database.getNewClient();
+  let dbClient;
 
-  const migrationsResult = await migrationRunner({
-    dbClient: dbClient,
-    direction: "up",
-    dir: join("infra", "migrations"),
-    dryRun: shouldDryRun,
-    verbose: true,
-    migrationsTable: "pgmigrations",
-  });
+  try {
+    dbClient = await database.getNewClient();
+    const migrationsResult = await migrationRunner({
+      dbClient: dbClient,
+      direction: "up",
+      dir: join("infra", "migrations"),
+      dryRun: shouldDryRun,
+      verbose: true,
+      migrationsTable: "pgmigrations",
+    });
 
-  dbClient.end();
+    // Assuming migrationsResult contains information to determine if migrations were run
+    const migrationsRan = migrationsResult.length > 0;
 
-  // Assuming migrationsResult contains information to determine if migrations were run
-  const migrationsRan = migrationsResult.length > 0;
-
-  return { migrationsResult, migrationsRan };
+    return { migrationsResult, migrationsRan };
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error running migrations: " + error);
+  } finally {
+    await dbClient.end();
+  }
 }
 
 export async function GET() {
