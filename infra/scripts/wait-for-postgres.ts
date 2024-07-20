@@ -11,8 +11,8 @@ sleep(1000);
 
 function checkPostgres() {
   exec(command, (error, stdout, stderr) => {
-    if (stderr) {
-      process.stdout.write(`.`);
+    if (stdout.search("accepting connections") === -1) {
+      process.stdout.write(".");
       checkPostgres();
       return;
     }
