@@ -5,13 +5,12 @@ import { beforeAll, expect, test } from "vitest";
 
 import database from "infra/database";
 
-beforeAll(async () => {
-  await cleanDatabase();
-});
+import orchestrator from "tests/orchestrator";
 
-async function cleanDatabase() {
+beforeAll(async () => {
+  await orchestrator.waitForAllServices();
   await database.query("DROP SCHEMA public cascade; CREATE SCHEMA public;");
-}
+});
 
 test("POST to /api/v1/migrations should return 200", async () => {
   const response1 = await fetch("http://localhost:3000/api/v1/migrations", {

@@ -21,6 +21,8 @@ async function runMigrations(shouldDryRun: boolean) {
       migrationsTable: "pgmigrations",
     });
 
+    console.log("DATABASE_URL: ", process.env.DATABASE_URL);
+
     // Assuming migrationsResult contains information to determine if migrations were run
     const migrationsRan = migrationsResult.length > 0;
 
