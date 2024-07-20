@@ -39,7 +39,7 @@ export async function GET() {
   const { migrationsResult, migrationsRan } = await runMigrations(true);
   // Return 201 if migrations ran, otherwise 200
   return new Response(JSON.stringify(migrationsResult), {
-    status: migrationsRan ? 201 : 200,
+    status: 200,
   });
 }
 
