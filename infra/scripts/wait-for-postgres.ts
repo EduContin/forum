@@ -10,7 +10,7 @@ function sleep(ms) {
 sleep(1000);
 
 function checkPostgres() {
-  exec(command, (error, stdout, stderr) => {
+  exec(command, (error, stdout) => {
     if (stdout.search("accepting connections") === -1) {
       process.stdout.write(".");
       checkPostgres();
