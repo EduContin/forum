@@ -36,7 +36,7 @@ async function runMigrations(shouldDryRun: boolean) {
 }
 
 export async function GET() {
-  const { migrationsResult, migrationsRan } = await runMigrations(true);
+  const { migrationsResult } = await runMigrations(true);
   // Return 201 if migrations ran, otherwise 200
   return new Response(JSON.stringify(migrationsResult), {
     status: 200,
