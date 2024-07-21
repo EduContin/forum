@@ -1,7 +1,6 @@
 {
   "extends": [
     "eslint:recommended",
-    "plugin:vitest/recommended",
     "next/core-web-vitals",
     "prettier"
   ]
