@@ -44,7 +44,7 @@ export default async function ForumDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#011120] text-white relative">
+    <div className="min-h-screen text-white relative">
       <MountainBackground />
       {session ? (
         <div className="container mx-auto px-4 py-8 relative z-10">
