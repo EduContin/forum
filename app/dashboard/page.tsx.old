@@ -1,4 +1,3 @@
-import React from "react";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { Alert, Button, CircularProgress } from "@mui/material";
@@ -9,8 +8,6 @@ import StickyTopics from "@/components/AnnouncementsTopics";
 import RecentTopics from "@/components/RecentTopics";
 import NewTopicButton from "@/components/NewTopicButton";
 import LogoutButton from "@/components/LogoutButton";
-import AnimatedDashboard from "@/components/AnimatedDashboard";
-import MountainBackground from "@/components/MountainBackground";
 
 export default async function ForumDashboard() {
   let session = null;
@@ -44,13 +41,12 @@ export default async function ForumDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#011120] text-white relative">
-      <MountainBackground />
+    <div className="flex flex-col items-center justify-center min-h-screen">
       {session ? (
-        <div className="container mx-auto px-4 py-8 relative z-10">
-          <AnimatedDashboard>
+        <>
+          <div className="min-h-screen bg-slate-950 text-gray-100 p-8">
             <h1 className="text-4xl font-bold mb-8 text-center">
-              Welcome to the Mountain Forum, {session.user?.name}
+              Welcome to the Forum Dashboard, {session.user?.name}
             </h1>
             <SearchBar />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
@@ -67,8 +63,8 @@ export default async function ForumDashboard() {
               <NewTopicButton />
               <LogoutButton />
             </div>
-          </AnimatedDashboard>
-        </div>
+          </div>
+        </>
       ) : (
         <CircularProgress />
       )}
