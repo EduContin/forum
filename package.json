@@ -35,7 +35,8 @@
     "pg": "^8.12.0",
     "react": "^18",
     "react-dom": "^18",
-    "react-password-strength-bar": "^0.4.1"
+    "react-password-strength-bar": "^0.4.1",
+    "react-snowfall": "^2.1.0"
   },
   "devDependencies": {
     "@types/async-retry": "^1.4.8",

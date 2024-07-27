@@ -45,7 +45,7 @@ export default async function ForumDashboard() {
 
   return (
     <div className="min-h-screen text-white relative">
-      <MountainBackground />
+      <MountainBackground isLoading={false} isSuccess={false} />
       {session ? (
         <div className="container mx-auto px-4 py-8 relative z-10">
           <AnimatedDashboard>

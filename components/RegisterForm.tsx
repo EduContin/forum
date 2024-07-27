@@ -11,6 +11,7 @@ import {
   Snackbar,
 } from "@mui/material";
 import PasswordStrengthBar from "react-password-strength-bar";
+import Link from "next/link";
 
 export default function RegisterForm() {
   const [username, setUsername] = useState("");
@@ -109,7 +110,7 @@ export default function RegisterForm() {
             required
             className="w-full px-3 py-2 mb-4 border rounded"
           />
-          <PasswordStrengthBar password={password} className="mb-4" />
+          <PasswordStrengthBar password={password} className="mb-8" />
           <FormControlLabel
             control={
               <Checkbox
@@ -134,6 +135,12 @@ export default function RegisterForm() {
           >
             Register
           </Button>
+          <p className="mt-4">
+            Already have an account?{" "}
+            <Link href="/login" legacyBehavior>
+              <a className="text-blue-500">Login</a>
+            </Link>
+          </p>
           <Snackbar
             open={showSuccessMessage}
             autoHideDuration={3000}

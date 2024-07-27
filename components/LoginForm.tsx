@@ -1,16 +1,19 @@
+// /Login/page.tsx
 "use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, Button, Snackbar } from "@mui/material";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
+import MountainBackground from "./MountainBackground";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,8 +38,10 @@ export default function LoginForm() {
       };
 
       if (response.ok) {
-        setShowSuccessMessage(true);
-        router.push("/dashboard");
+        setIsSuccess(true);
+        setTimeout(() => {
+          router.push("/");
+        }, 2000); // Delay navigation to show success animation
       } else {
         const data = await response.json();
         setError(data.message || "Login failed");
@@ -51,6 +56,7 @@ export default function LoginForm() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
+      <MountainBackground isLoading={isLoading} isSuccess={isSuccess} />
       <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
         <h1 className="text-4xl font-bold mb-8">Login</h1>
         <form onSubmit={handleSubmit} className="w-full max-w-xs">
@@ -84,11 +90,17 @@ export default function LoginForm() {
             {isLoading ? "Logging in..." : "Login"}
           </Button>
         </form>
+        <p className="mt-4">
+          Don&apos;t have an account?{" "}
+          <Link href="/register" legacyBehavior>
+            <a className="text-blue-500">Register</a>
+          </Link>
+        </p>
       </main>
       <Snackbar
-        open={showSuccessMessage}
+        open={isSuccess}
         autoHideDuration={3000}
-        onClose={() => setShowSuccessMessage(false)}
+        onClose={() => setIsSuccess(false)}
         message="Login successful"
       />
     </div>
