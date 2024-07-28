@@ -1,5 +1,3 @@
-// File: /app/api/auth/[...nextauth]/route.ts
-
 import NextAuth, { DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";

@@ -27,4 +27,5 @@ exports.up = (pgm) => {
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
+// eslint-disable-next-line no-unused-vars
 exports.down = (pgm) => {};

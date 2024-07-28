@@ -1,5 +1,5 @@
 import { config } from "dotenv";
-config({ path: ".env.development" }); // This loads the .env.development file
+config({ path: ".env.development" });
 
 import { beforeAll, expect, test } from "vitest";
 
@@ -12,7 +12,7 @@ beforeAll(async () => {
   await database.query("DROP SCHEMA public cascade; CREATE SCHEMA public;");
 });
 
-test("POST to /api/v1/migrations should return 200", async () => {
+test("POST to /api/v1/migrations should return 201 and 200 later", async () => {
   const response1 = await fetch("http://localhost:3000/api/v1/migrations", {
     method: "POST",
   });
