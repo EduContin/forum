@@ -8,10 +8,14 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      colors: {
+        mountain: {
+          darkest: "#011120",
+          darker: "#05294A",
+          dark: "#093B67",
+          medium: "#09467C",
+          light: "#0B5394",
+        },
       },
     },
   },
