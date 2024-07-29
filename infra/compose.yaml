@@ -6,3 +6,9 @@ services:
       - ../.env.development
     ports:
       - "5432:5432"
+
+  socket-server:
+    container_name: "socket-server"
+    build: ../socket-server
+    ports:
+      - "4000:4000"
