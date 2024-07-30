@@ -13,6 +13,16 @@ interface Message {
   message: string;
 }
 
+// Custom emoji mapping
+const customEmojis: { [key: string]: string } = {
+  ":smile:": "/path/to/smile.gif",
+  ":laugh:": "/path/to/laugh.png",
+  ":wink:": "/path/to/wink.gif",
+  ":heart:": "/path/to/heart.png",
+  ":thumbsup:": "/path/to/thumbsup.gif",
+  ":noo:": "/no.jpeg",
+};
+
 const Shoutbox = () => {
   const { data: session } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -31,28 +41,20 @@ const Shoutbox = () => {
     });
     setSocket(newSocket);
 
-    newSocket.on("message", async (message: Message) => {
-      setMessages((prevMessages) => {
-        if (Array.isArray(prevMessages)) {
-          return [...prevMessages, message];
-        }
-        return [message];
-      });
+    newSocket.on("message", (message: Message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
     });
 
     newSocket.on("messageUpdated", (updatedMessage: Message) => {
-      setMessages((prevMessages) => {
-        if (Array.isArray(prevMessages)) {
-          return prevMessages.map((msg) =>
-            msg.id === updatedMessage.id ? updatedMessage : msg,
-          );
-        }
-        return [updatedMessage];
-      });
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === updatedMessage.id ? updatedMessage : msg,
+        ),
+      );
     });
 
-    newSocket.on("recentMessages", (messages: Message[]) => {
-      setMessages(messages);
+    newSocket.on("recentMessages", (recentMessages: Message[]) => {
+      setMessages(recentMessages);
     });
 
     newSocket.on("message_error", (error: string) => {
@@ -64,7 +66,10 @@ const Shoutbox = () => {
       .then((response) => response.json())
       .then((data) => {
         setMessages(data.rows);
-      });
+      })
+      .catch((error) =>
+        console.error("Error fetching shoutbox history:", error),
+      );
 
     return () => {
       newSocket.disconnect();
@@ -73,6 +78,24 @@ const Shoutbox = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputMessage(e.target.value);
+  };
+
+  const renderMessageWithEmojis = (message: string) => {
+    const parts = message.split(/(:[a-zA-Z0-9_+-]+:)/g);
+    return parts.map((part, index) => {
+      const emojiUrl = customEmojis[part];
+      if (emojiUrl) {
+        return (
+          <img
+            key={index}
+            src={emojiUrl}
+            alt={part}
+            className="inline-block h-8 w-8 align-text-bottom"
+          />
+        );
+      }
+      return part;
+    });
   };
 
   const handleSendMessage = async () => {
@@ -88,16 +111,21 @@ const Shoutbox = () => {
         }
         setInputMessage("");
 
-        await fetch("/api/v1/shoutbox/history", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: session.user.name,
-            message: inputMessage,
-          }),
-        });
+        try {
+          await fetch("/api/v1/shoutbox/history", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username: session.user.name,
+              message: inputMessage,
+            }),
+          });
+        } catch (error) {
+          console.error("Error sending message:", error);
+          setErrorMessage("Failed to send message. Please try again.");
+        }
       } else {
         setErrorMessage("Message exceeds the maximum length");
       }
@@ -105,9 +133,9 @@ const Shoutbox = () => {
   };
 
   const handleEditMessage = (messageId: number) => {
-    setEditingMessageId(messageId);
     const messageToEdit = messages.find((msg) => msg.id === messageId);
     if (messageToEdit) {
+      setEditingMessageId(messageId);
       setInputMessage(messageToEdit.message);
     }
   };
@@ -117,7 +145,7 @@ const Shoutbox = () => {
       if (inputMessage.length <= MAX_MESSAGE_LENGTH) {
         const updatedMessage = {
           id: editingMessageId,
-          user: session.user.name,
+          username: session.user.name,
           message: inputMessage,
         };
         if (socket) {
@@ -140,14 +168,14 @@ const Shoutbox = () => {
     <div className="bg-gray-800 p-4 rounded-md mb-8">
       <h2 className="text-2xl font-bold mb-4">Shoutbox</h2>
       <div className="h-64 overflow-y-auto" ref={shoutboxRef}>
-        {Array.isArray(messages) && messages.length > 0 ? (
+        {messages.length > 0 ? (
           messages
             .slice()
             .reverse()
             .map((msg) => (
               <div key={msg.id} className="mb-2">
                 <strong>{msg.username}: </strong>
-                {msg.message}
+                {renderMessageWithEmojis(msg.message)}
                 {session && session.user.name === msg.username && (
                   <button
                     onClick={() => handleEditMessage(msg.id)}
