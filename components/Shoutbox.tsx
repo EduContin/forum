@@ -1,18 +1,28 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
+import { DefaultEventsMap } from "@socket.io/component-emitter";
 
 const MAX_MESSAGE_LENGTH = 100;
 
+interface Message {
+  id: number;
+  username: string;
+  message: string;
+}
+
 const Shoutbox = () => {
   const { data: session } = useSession();
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
-  const [socket, setSocket] = useState(null);
+  const [socket, setSocket] = useState<Socket<
+    DefaultEventsMap,
+    DefaultEventsMap
+  > | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [editingMessageId, setEditingMessageId] = useState(null);
+  const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
 
   useEffect(() => {
     const newSocket = io("http://localhost:4000", {
@@ -20,50 +30,84 @@ const Shoutbox = () => {
     });
     setSocket(newSocket);
 
-    newSocket.on("message", (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
+    newSocket.on("message", async (message: Message) => {
+      setMessages((prevMessages) => {
+        if (Array.isArray(prevMessages)) {
+          return [...prevMessages, message];
+        }
+        return [message];
+      });
     });
 
-    newSocket.on("messageUpdated", (updatedMessage) => {
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.id === updatedMessage.id ? updatedMessage : msg,
-        ),
-      );
+    // Update the message in the UI when it's updated
+    newSocket.on("messageUpdated", (updatedMessage: Message) => {
+      setMessages((prevMessages) => {
+        if (Array.isArray(prevMessages)) {
+          return prevMessages.map((msg) =>
+            msg.id === updatedMessage.id ? updatedMessage : msg,
+          );
+        }
+        return [updatedMessage];
+      });
     });
 
-    newSocket.on("message_error", (error) => {
+    newSocket.on("recentMessages", (messages: Message[]) => {
+      setMessages(messages);
+    });
+
+    newSocket.on("message_error", (error: string) => {
       setErrorMessage(error);
       // Clear error message after 5 seconds
       setTimeout(() => setErrorMessage(""), 5000);
     });
+
+    // Fetch recent messages from the API route
+    fetch("/api/v1/shoutbox/history")
+      .then((response) => response.json())
+      .then((data) => {
+        setMessages(data.rows); // Update this line
+      });
 
     return () => {
       newSocket.disconnect();
     };
   }, []);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputMessage(e.target.value);
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (inputMessage.trim() !== "" && session) {
       if (inputMessage.length <= MAX_MESSAGE_LENGTH) {
         const newMessage = {
           id: Date.now(),
-          user: session.user.name,
+          username: session.user.name,
           message: inputMessage,
         };
-        socket.emit("message", newMessage);
+        if (socket) {
+          socket.emit("message", newMessage);
+        }
         setInputMessage("");
+
+        // Send the message to the API route
+        await fetch("/api/v1/shoutbox/history", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: session.user.name,
+            message: inputMessage,
+          }),
+        });
       } else {
         setErrorMessage("Message exceeds the maximum length");
       }
     }
   };
 
-  const handleEditMessage = (messageId) => {
+  const handleEditMessage = (messageId: number) => {
     setEditingMessageId(messageId);
     const messageToEdit = messages.find((msg) => msg.id === messageId);
     if (messageToEdit) {
@@ -79,7 +123,9 @@ const Shoutbox = () => {
           user: session.user.name,
           message: inputMessage,
         };
-        socket.emit("updateMessage", updatedMessage);
+        if (socket) {
+          socket.emit("updateMessage", updatedMessage);
+        }
         setInputMessage("");
         setEditingMessageId(null);
       } else {
@@ -96,21 +142,28 @@ const Shoutbox = () => {
   return (
     <div className="bg-gray-800 p-4 rounded-md mb-8">
       <h2 className="text-2xl font-bold mb-4">Shoutbox</h2>
-      <div className="h-64 overflow-y-auto">
-        {messages.map((msg) => (
-          <div key={msg.id} className="mb-2">
-            <strong>{msg.user}: </strong>
-            {msg.message}
-            {session && session.user.name === msg.user && (
-              <button
-                onClick={() => handleEditMessage(msg.id)}
-                className="ml-2 text-xs text-blue-500 hover:text-blue-600"
-              >
-                Edit
-              </button>
-            )}
-          </div>
-        ))}
+      <div
+        className="h-64 overflow-y-auto"
+        style={{ display: "flex", flexDirection: "column-reverse" }}
+      >
+        {Array.isArray(messages) && messages.length > 0 ? (
+          messages.map((msg) => (
+            <div key={msg.id} className="mb-2">
+              <strong>{msg.username}: </strong>
+              {msg.message}
+              {session && session.user.name === msg.username && (
+                <button
+                  onClick={() => handleEditMessage(msg.id)}
+                  className="ml-2 text-xs text-blue-500 hover:text-blue-600"
+                >
+                  Edit
+                </button>
+              )}
+            </div>
+          ))
+        ) : (
+          <p>No messages yet.</p>
+        )}
       </div>
       <div className="mt-4">
         <input

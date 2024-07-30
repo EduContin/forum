@@ -7,8 +7,7 @@ export async function POST(request: Request) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    // eslint-disable-next-line no-unused-vars
-    const result = await database.query({
+    await database.query({
       text: `INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id`,
       values: [username, email, hashedPassword],
     });
