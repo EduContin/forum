@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { io, Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
@@ -23,6 +23,7 @@ const Shoutbox = () => {
   > | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
+  const shoutboxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const newSocket = io("http://localhost:4000", {
@@ -39,7 +40,6 @@ const Shoutbox = () => {
       });
     });
 
-    // Update the message in the UI when it's updated
     newSocket.on("messageUpdated", (updatedMessage: Message) => {
       setMessages((prevMessages) => {
         if (Array.isArray(prevMessages)) {
@@ -57,15 +57,13 @@ const Shoutbox = () => {
 
     newSocket.on("message_error", (error: string) => {
       setErrorMessage(error);
-      // Clear error message after 5 seconds
       setTimeout(() => setErrorMessage(""), 5000);
     });
 
-    // Fetch recent messages from the API route
     fetch("/api/v1/shoutbox/history")
       .then((response) => response.json())
       .then((data) => {
-        setMessages(data.rows); // Update this line
+        setMessages(data.rows);
       });
 
     return () => {
@@ -90,7 +88,6 @@ const Shoutbox = () => {
         }
         setInputMessage("");
 
-        // Send the message to the API route
         await fetch("/api/v1/shoutbox/history", {
           method: "POST",
           headers: {
@@ -142,25 +139,25 @@ const Shoutbox = () => {
   return (
     <div className="bg-gray-800 p-4 rounded-md mb-8">
       <h2 className="text-2xl font-bold mb-4">Shoutbox</h2>
-      <div
-        className="h-64 overflow-y-auto"
-        style={{ display: "flex", flexDirection: "column-reverse" }}
-      >
+      <div className="h-64 overflow-y-auto" ref={shoutboxRef}>
         {Array.isArray(messages) && messages.length > 0 ? (
-          messages.map((msg) => (
-            <div key={msg.id} className="mb-2">
-              <strong>{msg.username}: </strong>
-              {msg.message}
-              {session && session.user.name === msg.username && (
-                <button
-                  onClick={() => handleEditMessage(msg.id)}
-                  className="ml-2 text-xs text-blue-500 hover:text-blue-600"
-                >
-                  Edit
-                </button>
-              )}
-            </div>
-          ))
+          messages
+            .slice()
+            .reverse()
+            .map((msg) => (
+              <div key={msg.id} className="mb-2">
+                <strong>{msg.username}: </strong>
+                {msg.message}
+                {session && session.user.name === msg.username && (
+                  <button
+                    onClick={() => handleEditMessage(msg.id)}
+                    className="ml-2 text-xs text-blue-500 hover:text-blue-600"
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+            ))
         ) : (
           <p>No messages yet.</p>
         )}
