@@ -35,8 +35,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Migrations
-infra/migrations/*.js
-
 # Socket server
 socket-server/node_modules
