@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { io, Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 const MAX_MESSAGE_LENGTH = 100;
 
@@ -15,12 +16,8 @@ interface Message {
 }
 
 const customEmojis: { [key: string]: string } = {
-  ":smile:": "/path/to/smile.gif",
-  ":laugh:": "/path/to/laugh.png",
-  ":wink:": "/path/to/wink.gif",
-  ":heart:": "/path/to/heart.png",
-  ":thumbsup:": "/path/to/thumbsup.gif",
   ":noo:": "/no.jpeg",
+  ":winter:": "/winter_soldier.gif",
 };
 
 const Shoutbox = () => {
@@ -85,11 +82,13 @@ const Shoutbox = () => {
       const emojiUrl = customEmojis[part as keyof typeof customEmojis];
       if (emojiUrl) {
         return (
-          <img
+          <Image
             key={index}
             src={emojiUrl}
             alt={part}
             className="inline-block h-5 w-5 align-text-bottom"
+            width={20}
+            height={20}
           />
         );
       }
@@ -193,10 +192,10 @@ const Shoutbox = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="bg-gray-800 py-1 px-2 rounded-md flex items-center"
+                className="bg-gray-800 py-1.5 px-2 rounded-md flex items-center"
               >
                 <img
-                  src="/path/to/default/profile/pic.png"
+                  src="/winter_soldier.gif"
                   alt="Profile"
                   className="h-5 w-5 rounded-full mr-2 flex-shrink-0"
                 />
@@ -238,7 +237,7 @@ const Shoutbox = () => {
         />
         <button
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          className="p-2 bg-gray-600 text-white rounded-r-md hover:bg-gray-500 focus:outline-none transition-colors"
+          className="p-1.5 pl-2 pr-2 ml-1 bg-gray-600 text-white rounded-md hover:bg-gray-500 focus:outline-none transition-colors"
         >
           😀
         </button>
