@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { io, Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
+import { motion, AnimatePresence } from "framer-motion";
 
 const MAX_MESSAGE_LENGTH = 100;
 
@@ -13,7 +14,6 @@ interface Message {
   message: string;
 }
 
-// Custom emoji mapping
 const customEmojis: { [key: string]: string } = {
   ":smile:": "/path/to/smile.gif",
   ":laugh:": "/path/to/laugh.png",
@@ -33,16 +33,15 @@ const Shoutbox = () => {
   > | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const shoutboxRef = useRef<HTMLDivElement>(null);
-
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    const newSocket = io("http://localhost:4000", {
-      withCredentials: true,
-    });
+    const newSocket = io("http://localhost:4000", { withCredentials: true });
     setSocket(newSocket);
 
     newSocket.on("message", (message: Message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
+      setMessages((prevMessages) => [message, ...prevMessages]);
     });
 
     newSocket.on("messageUpdated", (updatedMessage: Message) => {
@@ -83,14 +82,14 @@ const Shoutbox = () => {
   const renderMessageWithEmojis = (message: string) => {
     const parts = message.split(/(:[a-zA-Z0-9_+-]+:)/g);
     return parts.map((part, index) => {
-      const emojiUrl = customEmojis[part];
+      const emojiUrl = customEmojis[part as keyof typeof customEmojis];
       if (emojiUrl) {
         return (
           <img
             key={index}
             src={emojiUrl}
             alt={part}
-            className="inline-block h-8 w-8 align-text-bottom"
+            className="inline-block h-5 w-5 align-text-bottom"
           />
         );
       }
@@ -132,11 +131,23 @@ const Shoutbox = () => {
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (editingMessageId) {
+        handleUpdateMessage();
+      } else {
+        handleSendMessage();
+      }
+    }
+  };
+
   const handleEditMessage = (messageId: number) => {
     const messageToEdit = messages.find((msg) => msg.id === messageId);
     if (messageToEdit) {
       setEditingMessageId(messageId);
       setInputMessage(messageToEdit.message);
+      inputRef.current?.focus();
     }
   };
 
@@ -164,66 +175,102 @@ const Shoutbox = () => {
     setInputMessage("");
   };
 
+  const handleEmojiClick = (emoji: string) => {
+    setInputMessage((prevMessage) => prevMessage + emoji);
+    setShowEmojiPicker(false);
+  };
+
   return (
-    <div className="bg-gray-800 p-4 rounded-md mb-8">
-      <h2 className="text-2xl font-bold mb-4">Shoutbox</h2>
-      <div className="h-64 overflow-y-auto" ref={shoutboxRef}>
-        {messages.length > 0 ? (
-          messages
-            .slice()
-            .reverse()
-            .map((msg) => (
-              <div key={msg.id} className="mb-2">
-                <strong>{msg.username}: </strong>
-                {renderMessageWithEmojis(msg.message)}
+    <div className="bg-gray-900 p-4 rounded-lg shadow-lg">
+      <h2 className="text-xl font-bold mb-3 text-white">Shoutbox</h2>
+      <div className="h-64 overflow-y-auto mb-3 space-y-1" ref={shoutboxRef}>
+        <AnimatePresence>
+          {messages.length > 0 ? (
+            messages.map((msg) => (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className="bg-gray-800 py-1 px-2 rounded-md flex items-center"
+              >
+                <img
+                  src="/path/to/default/profile/pic.png"
+                  alt="Profile"
+                  className="h-5 w-5 rounded-full mr-2 flex-shrink-0"
+                />
+                <div className="flex-grow min-w-0 flex items-center">
+                  <span className="font-semibold text-blue-400 text-xs mr-1">
+                    {msg.username}:
+                  </span>
+                  <p className="text-gray-300 text-xs truncate">
+                    {renderMessageWithEmojis(msg.message)}
+                  </p>
+                </div>
                 {session && session.user.name === msg.username && (
                   <button
                     onClick={() => handleEditMessage(msg.id)}
-                    className="ml-2 text-xs text-blue-500 hover:text-blue-600"
+                    className="text-xs text-gray-400 hover:text-blue-400 transition-colors ml-1 flex-shrink-0"
                   >
                     Edit
                   </button>
                 )}
-              </div>
+              </motion.div>
             ))
-        ) : (
-          <p>No messages yet.</p>
-        )}
+          ) : (
+            <p className="text-gray-400 text-sm">No messages yet.</p>
+          )}
+        </AnimatePresence>
       </div>
-      <div className="mt-4">
+      <div className="mt-3 relative flex items-center">
         <input
+          ref={inputRef}
           type="text"
           value={inputMessage}
           onChange={handleInputChange}
-          className="w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none"
-          placeholder="Type your message..."
+          onKeyPress={handleKeyPress}
+          className="flex-grow p-2 rounded-l-md bg-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          placeholder={
+            editingMessageId ? "Edit your message..." : "Type your message..."
+          }
           maxLength={MAX_MESSAGE_LENGTH}
         />
-        {errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
-        {editingMessageId ? (
-          <div>
-            <button
-              onClick={handleUpdateMessage}
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none"
-            >
-              Update
-            </button>
-            <button
-              onClick={handleCancelEdit}
-              className="mt-2 ml-2 px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none"
-            >
-              Cancel
-            </button>
+        <button
+          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          className="p-2 bg-gray-600 text-white rounded-r-md hover:bg-gray-500 focus:outline-none transition-colors"
+        >
+          😀
+        </button>
+        {showEmojiPicker && (
+          <div className="absolute right-0 bottom-full mb-2 bg-gray-800 p-2 rounded-md shadow-lg">
+            {Object.keys(customEmojis).map((emoji) => (
+              <button
+                key={emoji}
+                onClick={() => handleEmojiClick(emoji)}
+                className="m-1 p-1 hover:bg-gray-700 rounded"
+              >
+                <img
+                  src={customEmojis[emoji]}
+                  alt={emoji}
+                  className="w-6 h-6"
+                />
+              </button>
+            ))}
           </div>
-        ) : (
-          <button
-            onClick={handleSendMessage}
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none"
-          >
-            Send
-          </button>
         )}
       </div>
+      {errorMessage && (
+        <p className="text-red-500 mt-1 text-xs">{errorMessage}</p>
+      )}
+      {editingMessageId && (
+        <button
+          onClick={handleCancelEdit}
+          className="mt-2 px-3 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none transition-colors text-xs"
+        >
+          Cancel
+        </button>
+      )}
     </div>
   );
 };
