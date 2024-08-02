@@ -11,7 +11,7 @@ export async function GET() {
         ORDER BY created_at DESC
         LIMIT 10
       ) sub
-      ORDER BY created_at ASC;
+      ORDER BY created_at DESC;
     `,
   });
   return NextResponse.json(result, { status: 200 });

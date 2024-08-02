@@ -196,10 +196,12 @@ const Shoutbox = () => {
                 transition={{ duration: 0.2 }}
                 className="bg-gray-900 py-2 px-2 rounded-md flex items-center"
               >
-                <img
+                <Image
                   src="/winter_soldier.gif"
                   alt="Profile"
                   className="h-7 w-7 mr-2 flex-shrink-0"
+                  width={0}
+                  height={0}
                 />
                 <div className="flex-grow min-w-0 flex items-center">
                   <span
@@ -258,10 +260,12 @@ const Shoutbox = () => {
                 onClick={() => handleEmojiClick(emoji)}
                 className="m-1 p-1 hover:bg-gray-700 rounded"
               >
-                <img
+                <Image
                   src={customEmojis[emoji]}
                   alt={emoji}
                   className="w-6 h-6"
+                  width={0}
+                  height={0}
                 />
               </button>
             ))}
