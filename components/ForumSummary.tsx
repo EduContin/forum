@@ -21,7 +21,7 @@ const ForumSummary = () => {
   ];
 
   return (
-    <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 mb-8">
+    <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 mb-2">
       <h2 className="text-2xl font-bold mb-4">Sub-Forums</h2>
       <table className="w-full">
         <thead>

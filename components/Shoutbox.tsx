@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 const MAX_MESSAGE_LENGTH = 100;
+const USERNAME_WIDTH = "100px"; // Adjust this value as needed
 
 interface Message {
   id: number;
@@ -33,6 +34,7 @@ const Shoutbox = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const shoutboxRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     const newSocket = io("http://localhost:4000", { withCredentials: true });
     setSocket(newSocket);
@@ -86,7 +88,7 @@ const Shoutbox = () => {
             key={index}
             src={emojiUrl}
             alt={part}
-            className="inline-block h-5 w-5 align-text-bottom"
+            className="inline-block h-7 w-7"
             width={20}
             height={20}
           />
@@ -180,9 +182,9 @@ const Shoutbox = () => {
   };
 
   return (
-    <div className="bg-gray-900 p-4 rounded-lg shadow-lg">
+    <div className="bg-gray-800/90 p-4 rounded-lg shadow-lg mb-2">
       <h2 className="text-xl font-bold mb-3 text-white">Shoutbox</h2>
-      <div className="h-64 overflow-y-auto mb-3 space-y-1" ref={shoutboxRef}>
+      <div className="h-96 overflow-y-auto mb-3 space-y-1" ref={shoutboxRef}>
         <AnimatePresence>
           {messages.length > 0 ? (
             messages.map((msg) => (
@@ -192,18 +194,25 @@ const Shoutbox = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="bg-gray-800 py-1.5 px-2 rounded-md flex items-center"
+                className="bg-gray-900 py-2 px-2 rounded-md flex items-center"
               >
                 <img
                   src="/winter_soldier.gif"
                   alt="Profile"
-                  className="h-5 w-5 rounded-full mr-2 flex-shrink-0"
+                  className="h-7 w-7 mr-2 flex-shrink-0"
                 />
                 <div className="flex-grow min-w-0 flex items-center">
-                  <span className="font-semibold text-blue-400 text-xs mr-1">
-                    {msg.username}:
+                  <span
+                    className="text-sm mr-1"
+                    style={{
+                      width: USERNAME_WIDTH,
+                      minWidth: USERNAME_WIDTH,
+                      display: "inline-block",
+                    }}
+                  >
+                    {msg.username}
                   </span>
-                  <p className="text-gray-300 text-xs truncate">
+                  <p className="text-gray-400 text-sm truncate">
                     {renderMessageWithEmojis(msg.message)}
                   </p>
                 </div>

@@ -53,7 +53,7 @@ export default async function ForumDashboard() {
           <div className="container mx-auto px-4 py-8 relative z-10">
             <AnimatedDashboard>
               <h1 className="text-4xl font-bold mb-8 text-center">
-                Welcome to the Mountain Forum, {session.user?.name}
+                Welcome, {session.user?.name}
               </h1>
               <SearchBar />
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">

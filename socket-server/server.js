@@ -1,10 +1,7 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const cors = require("cors");
 const { RateLimiterMemory } = require("rate-limiter-flexible");
-
-const database = require("../infra/database");
 
 const app = express();
 const server = http.createServer(app);
@@ -66,27 +63,6 @@ io.on("connection", (socket) => {
         socket.emit("message_error", "Message exceeds the maximum length");
       }
     });
-  });
-
-  // Fetch recent messages from the database
-  socket.on("getRecentMessages", async () => {
-    try {
-      const result = await database.query({
-        text: `
-          SELECT * 
-          FROM (
-            SELECT * 
-            FROM messages
-            ORDER BY created_at DESC
-            LIMIT 10
-          ) sub
-          ORDER BY created_at ASC;
-        `,
-      });
-      socket.emit("recentMessages", result.rows);
-    } catch (error) {
-      console.error("Error fetching recent messages:", error);
-    }
   });
 
   socket.on("disconnect", () => {
