@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import database from "@/infra/database";
+import { slugify } from "@/models/slugify";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") || "1");
   const pageSize = parseInt(searchParams.get("pageSize") || "10");
   const categorySlug = searchParams.get("categorySlug");
+  const threadId = searchParams.get("threadId");
 
   const offset = (page - 1) * pageSize;
 
@@ -24,6 +26,9 @@ export async function GET(request: NextRequest) {
     if (categorySlug) {
       query += ` WHERE LOWER(REPLACE(c.name, ' ', '-')) = $1`;
       queryParams.push(categorySlug);
+    } else if (threadId) {
+      query += ` WHERE t.id = $1`;
+      queryParams.push(threadId);
     }
 
     query += `
@@ -67,10 +72,10 @@ export async function POST(request: NextRequest) {
       values: [title, userId, categoryId, content],
     });
 
-    return NextResponse.json(
-      { threadId: result.rows[0].thread_id },
-      { status: 201 },
-    );
+    const threadId = result.rows[0].thread_id;
+    const slug = slugify(title);
+
+    return NextResponse.json({ threadId, slug }, { status: 201 });
   } catch (error) {
     console.error("Error creating thread:", error);
     return NextResponse.json(

@@ -6,6 +6,7 @@ import { io, Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import customEmojis from "@/models/custom-emojis";
 
 const MAX_MESSAGE_LENGTH = 100;
 const USERNAME_WIDTH = "100px"; // Adjust this value as needed
@@ -15,11 +16,6 @@ interface Message {
   username: string;
   message: string;
 }
-
-const customEmojis: { [key: string]: string } = {
-  ":noo:": "/no.jpeg",
-  ":winter:": "/winter_soldier.gif",
-};
 
 const Shoutbox = () => {
   const { data: session } = useSession();

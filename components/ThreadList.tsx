@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { slugify } from "@/models/slugify";
 
 interface Thread {
   id: number;
@@ -44,7 +45,7 @@ const ThreadList: React.FC<ThreadListProps> = ({ threads }) => {
             <tr key={thread.id}>
               <td className="py-2 px-4 border-b border-gray-600/50">
                 <Link
-                  href={`/thread/${thread.id}`}
+                  href={`/thread/${slugify(thread.title)}-${thread.id}`}
                   className="text-blue-400 hover:underline"
                 >
                   {thread.title}

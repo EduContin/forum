@@ -1,5 +1,6 @@
 import React from "react";
 import ThreadList from "@/components/ThreadList";
+import Link from "next/link";
 
 async function getCategoryThreads(categorySlug: string) {
   const apiUrl = "http://localhost:3000";
@@ -37,8 +38,17 @@ export default async function CategoryPage({
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-4">{category.name}</h1>
-      <p className="text-xl mb-8">{category.description}</p>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-4xl font-bold">{category.name}</h1>
+          <p className="text-xl">{category.description}</p>
+        </div>
+        <Link href={`/category/${categorySlug}/create`}>
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            Create Thread
+          </button>
+        </Link>
+      </div>
       <ThreadList threads={threads} />
     </main>
   );
