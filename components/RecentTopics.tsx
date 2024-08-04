@@ -1,6 +1,27 @@
 import React from "react";
+interface Thread {
+  id: number;
+  title: string;
+  username: string;
+  category_name: string;
+  post_count: number;
+  last_post_at: string;
+}
 
-const RecentTopics = () => {
+async function getLatestThreads() {
+  const apiUrl = "http://localhost:3000";
+  const response = await fetch(`${apiUrl}/api/v1/threads?page=1&pageSize=10`, {
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch threads");
+  }
+  return response.json();
+}
+
+async function RecentTopics() {
+  const threads = await getLatestThreads();
+
   const recentTopics = [
     {
       id: 1,
@@ -36,8 +57,20 @@ const RecentTopics = () => {
           </li>
         ))}
       </ul>
+
+      <ul className="space-y-2">
+        {threads.map((thread: Thread) => (
+          <li key={thread.id} className="bg-gray-900 p-4 rounded shadow">
+            <div className="font-semibold">{thread.title}</div>
+            <div className="text-sm text-gray-500">
+              By {thread.username} | Last activity:{" "}
+              {new Date(thread.last_post_at).toLocaleString()}
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
-};
+}
 
 export default RecentTopics;
