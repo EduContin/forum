@@ -19,6 +19,15 @@ exports.up = (pgm) => {
       notNull: true,
       default: pgm.func("current_timestamp"),
     },
+    avatar_url: { type: "varchar(255)" },
+    bio: { type: "text" },
+    user_group: { type: "varchar(50)", notNull: true, default: "Member" },
+    threads_count: { type: "integer", notNull: true, default: 0 },
+    posts_count: { type: "integer", notNull: true, default: 0 },
+    likes_received: { type: "integer", notNull: true, default: 0 },
+    reputation: { type: "integer", notNull: true, default: 0 },
+    vouches: { type: "integer", notNull: true, default: 0 },
+    last_seen: { type: "timestamp" },
   });
 };
 
