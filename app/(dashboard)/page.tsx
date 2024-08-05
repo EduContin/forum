@@ -11,7 +11,7 @@ import AnimatedDashboard from "@/components/AnimatedDashboard";
 import MountainBackground from "@/components/MountainBackground";
 import Shoutbox from "@/components/Shoutbox";
 import SessionProviderClient from "@/components/SessionProviderClient";
-import UserProfileBox from "@/components/UserProfileBox";
+import Navbar from "@/components/Navbar";
 
 export default async function ForumDashboard() {
   let session = null;
@@ -46,6 +46,7 @@ export default async function ForumDashboard() {
 
   return (
     <SessionProviderClient session={session}>
+      <Navbar />
       <div className="min-h-screen text-white relative">
         <MountainBackground isLoading={false} isSuccess={false} />
         {session ? (
@@ -54,7 +55,6 @@ export default async function ForumDashboard() {
               <h1 className="text-4xl font-bold mb-8 text-center">
                 Welcome, {session.user?.name}
               </h1>
-              <UserProfileBox session={session} />
               <SearchBar />
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
                 <div className="lg:col-span-2">
