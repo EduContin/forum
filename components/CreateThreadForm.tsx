@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { slugify } from "@/models/slugify";
 import customEmojis from "@/models/custom-emojis";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 interface CreateThreadFormProps {
   categoryId: number;
 }
 
 const CreateThreadForm: React.FC<CreateThreadFormProps> = ({ categoryId }) => {
+  const { data: session } = useSession();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const router = useRouter();
@@ -35,7 +37,7 @@ const CreateThreadForm: React.FC<CreateThreadFormProps> = ({ categoryId }) => {
           title,
           content,
           categoryId,
-          userId: 1, // Replace with the actual user ID from authentication
+          userId: session?.user.id,
         }),
       });
 

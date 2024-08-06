@@ -58,6 +58,7 @@ exports.up = (pgm) => {
       notNull: true,
       default: pgm.func("current_timestamp"),
     },
+    likes_count: { type: "integer", notNull: true, default: 0 },
   });
 };
 
