@@ -27,31 +27,29 @@ export default async function UserProfilePage({
   }
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-white relative">
       <MountainBackground isLoading={false} isSuccess={false} />
-      <div className="relative">
-        <div className="h-64 bg-gradient-to-r from-blue-600 to-purple-700"></div>
-        <div className="container mx-auto px-4">
-          <div className="relative -mt-24 flex flex-col items-center md:flex-row md:items-end">
-            <div className="flex-shrink-0 mb-4 md:mb-0">
-              <Image
-                src={user.avatar_url || "/winter_soldier.gif"}
-                alt={user.username}
-                className="w-40 h-40 rounded-full border-4 border-white shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
-                width={160}
-                height={160}
-              />
-            </div>
-            <div className="md:ml-6 text-center md:text-left">
-              <h1 className="text-4xl font-bold text-white mb-2">
-                {user.username}
-              </h1>
-              <p className="text-xl text-gray-300">{user.user_group}</p>
-            </div>
+      <div className="h-64 bg-gradient-to-r from-blue-600 to-purple-700"></div>
+      <div className="container mx-auto px-4">
+        <div className="relative -mt-24 flex flex-col items-center md:flex-row md:items-end">
+          <div className="flex-shrink-0 mb-4 md:mb-0">
+            <Image
+              src={user.avatar_url || "/winter_soldier.gif"}
+              alt={user.username}
+              className="w-40 h-40 rounded-full border-4 border-white shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+              width={160}
+              height={160}
+            />
+          </div>
+          <div className="md:ml-6 text-center md:text-left">
+            <h1 className="text-4xl font-bold text-white mb-2">
+              {user.username}
+            </h1>
+            <p className="text-xl text-gray-300">{user.user_group}</p>
           </div>
         </div>
       </div>
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-gray-800 rounded-lg shadow-md p-6 animate-fade-in">
             <h2 className="text-2xl font-bold mb-4 text-blue-400">Bio</h2>
