@@ -88,51 +88,48 @@ export default function UserProfile({
   };
 
   return (
-    <>
-      <div className="relative">
-        <div className="h-64 bg-gradient-to-r from-blue-600 to-purple-700"></div>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <header className="bg-gradient-to-r from-blue-600 to-purple-700 py-20">
         <div className="container mx-auto px-4">
-          <div className="relative -mt-24 flex flex-col items-center md:flex-row md:items-end">
+          <div className="flex flex-col md:flex-row items-center justify-center md:justify-start">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="flex-shrink-0 mb-4 md:mb-0"
+              className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-lg mb-6 md:mb-0 md:mr-8"
             >
               <Image
                 src={user.avatar_url || "/winter_soldier.gif"}
                 alt={user.username}
-                className="w-40 h-40 rounded-full border-4 border-white shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
                 width={160}
                 height={160}
+                className="w-full h-full object-cover"
               />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="md:ml-6 text-center md:text-left"
+              className="text-center md:text-left"
             >
-              <h1 className="text-4xl font-bold text-white mb-2">
-                {user.username}
-              </h1>
-              <p className="text-xl text-gray-300">{user.user_group}</p>
+              <h1 className="text-4xl font-bold mb-2">{user.username}</h1>
+              <p className="text-xl text-blue-200">{user.user_group}</p>
             </motion.div>
           </div>
         </div>
-      </div>
-      <div className="container mx-auto px-4 py-12">
+      </header>
+      <main className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <motion.div
+          <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
             className="bg-gray-800 rounded-lg shadow-md p-6"
           >
             <h2 className="text-2xl font-bold mb-4 text-blue-400">Bio</h2>
-            <p className="text-gray-300">{user.bio || "No bio available"}</p>
-          </motion.div>
-          <motion.div
+            <p>{user.bio || "No bio available"}</p>
+          </motion.section>
+          <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
@@ -141,23 +138,23 @@ export default function UserProfile({
             <h2 className="text-2xl font-bold mb-4 text-blue-400">Stats</h2>
             <ul className="space-y-2">
               <li className="flex justify-between">
-                <span className="text-gray-400">Threads:</span>
-                <span className="text-gray-200">{user.threads_count}</span>
+                <span className="font-semibold">Threads:</span>
+                <span>{user.threads_count}</span>
               </li>
               <li className="flex justify-between">
-                <span className="text-gray-400">Posts:</span>
-                <span className="text-gray-200">{user.posts_count}</span>
+                <span className="font-semibold">Posts:</span>
+                <span>{user.posts_count}</span>
               </li>
               <li className="flex justify-between">
-                <span className="text-gray-400">Likes Received:</span>
-                <span className="text-gray-200">{user.likes_received}</span>
+                <span className="font-semibold">Likes Received:</span>
+                <span>{user.likes_received}</span>
               </li>
               <li className="flex justify-between">
-                <span className="text-gray-400">Reputation:</span>
-                <span className="text-gray-200">
+                <span className="font-semibold">Reputation:</span>
+                <span>
                   {user.reputation}{" "}
                   <button
-                    className="text-blue-400 hover:underline"
+                    className="text-blue-400 hover:underline focus:outline-none"
                     onClick={() => setShowReputationPopup(true)}
                   >
                     +
@@ -165,24 +162,44 @@ export default function UserProfile({
                 </span>
               </li>
               <li className="flex justify-between">
-                <span className="text-gray-400">Vouches:</span>
-                <span className="text-gray-200">{user.vouches}</span>
+                <span className="font-semibold">Vouches:</span>
+                <span>{user.vouches}</span>
               </li>
             </ul>
-          </motion.div>
-          <motion.div
+          </motion.section>
+          <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
             className="bg-gray-800 rounded-lg shadow-md p-6"
           >
             <h2 className="text-2xl font-bold mb-4 text-blue-400">Activity</h2>
-            <p className="text-gray-300">
-              Last Seen: {user.last_seen || "N/A"}
-            </p>
-          </motion.div>
+            <p>Last Seen: {user.last_seen || "N/A"}</p>
+          </motion.section>
         </div>
-      </div>
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="mt-12"
+        >
+          <h2 className="text-3xl font-bold mb-6 text-blue-400">
+            Recent Threads
+          </h2>
+          {/* Render recent threads */}
+        </motion.section>
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+          className="mt-12"
+        >
+          <h2 className="text-3xl font-bold mb-6 text-blue-400">
+            Recent Posts
+          </h2>
+          {/* Render recent posts */}
+        </motion.section>
+      </main>
       <AnimatePresence>
         {showReputationPopup && (
           <motion.div
@@ -208,7 +225,7 @@ export default function UserProfile({
                     key={reputation.id}
                     className="bg-gray-700 rounded-lg p-4 transition-all duration-300 hover:shadow-md"
                   >
-                    <p className="text-gray-300">
+                    <p>
                       <Link href={`/users/${reputation.voter_username}`}>
                         <span className="font-semibold text-blue-400 hover:underline">
                           {reputation.voter_username}
@@ -236,22 +253,29 @@ export default function UserProfile({
                     Add/Edit Reputation
                   </h3>
                   <div className="mb-4">
-                    <label className="block text-gray-400 mb-2">
-                      Reputation Change:
-                    </label>
+                    <label className="block mb-2">Reputation Change:</label>
                     <select
                       className="w-full bg-gray-600 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={reputationChange}
+                      value={reputationChange || 0}
                       onChange={(e) =>
                         setReputationChange(parseInt(e.target.value))
                       }
                     >
+                      <option value={0}>0</option>
+                      <option value={5}>+5</option>
+                      <option value={4}>+4</option>
+                      <option value={3}>+3</option>
+                      <option value={2}>+2</option>
                       <option value={1}>+1</option>
                       <option value={-1}>-1</option>
+                      <option value={-2}>-2</option>
+                      <option value={-3}>-3</option>
+                      <option value={-4}>-4</option>
+                      <option value={-5}>-5</option>
                     </select>
                   </div>
                   <div className="mb-4">
-                    <label className="block text-gray-400 mb-2">Comment:</label>
+                    <label className="block mb-2">Comment:</label>
                     <textarea
                       className="w-full bg-gray-600 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={reputationComment}
@@ -285,6 +309,6 @@ export default function UserProfile({
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
