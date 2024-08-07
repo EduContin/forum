@@ -11,7 +11,6 @@ import AnimatedDashboard from "@/components/AnimatedDashboard";
 import MountainBackground from "@/components/MountainBackground";
 import Shoutbox from "@/components/Shoutbox";
 import SessionProviderClient from "@/components/SessionProviderClient";
-import Navbar from "@/components/Navbar";
 
 export default async function ForumDashboard() {
   let session = null;
@@ -46,7 +45,6 @@ export default async function ForumDashboard() {
 
   return (
     <SessionProviderClient session={session}>
-      <Navbar />
       <div className="min-h-screen text-white relative">
         <MountainBackground isLoading={false} isSuccess={false} />
         {session ? (
