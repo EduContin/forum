@@ -88,10 +88,10 @@ export default function UserProfile({
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <header className="bg-gradient-to-r from-blue-600 to-purple-700 py-20">
+    <div className="min-h-screen text-white relative z-1">
+      <header className="bg-gradient-to-r from-blue-600 to-purple-700 py-4">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-center md:justify-start">
+          <div className="flex flex-col md:flex-row items-center justify-center md:justify-start ">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -118,87 +118,137 @@ export default function UserProfile({
           </div>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-gray-800 rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-4 text-blue-400">Bio</h2>
-            <p>{user.bio || "No bio available"}</p>
-          </motion.section>
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-gray-800 rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-4 text-blue-400">Stats</h2>
-            <ul className="space-y-2">
-              <li className="flex justify-between">
-                <span className="font-semibold">Threads:</span>
-                <span>{user.threads_count}</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="font-semibold">Posts:</span>
-                <span>{user.posts_count}</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="font-semibold">Likes Received:</span>
-                <span>{user.likes_received}</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="font-semibold">Reputation:</span>
-                <span>
-                  {user.reputation}{" "}
-                  <button
-                    className="text-blue-400 hover:underline focus:outline-none"
-                    onClick={() => setShowReputationPopup(true)}
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-1 space-y-6">
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="bg-gray-800 rounded-lg shadow-md p-6"
+            >
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-gray-700 rounded-lg">
+                  <p
+                    className={`text-3xl font-bold ${user.reputation >= 0 ? "text-green-500" : "text-red-500"}`}
                   >
-                    +
-                  </button>
-                </span>
-              </li>
-              <li className="flex justify-between">
-                <span className="font-semibold">Vouches:</span>
-                <span>{user.vouches}</span>
-              </li>
-            </ul>
-          </motion.section>
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="bg-gray-800 rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-4 text-blue-400">Activity</h2>
-            <p>Last Seen: {user.last_seen || "N/A"}</p>
-          </motion.section>
+                    {user.reputation}
+                  </p>
+                  <p className="text-sm text-gray-400">Reputation</p>
+                  <span>
+                    <button
+                      className="font-bold text-xl text-blue-400"
+                      onClick={() => setShowReputationPopup(true)}
+                    >
+                      +
+                    </button>
+                  </span>
+                </div>
+                <div className="text-center p-4 bg-gray-700 rounded-lg">
+                  <p className="text-3xl font-bold text-green-500">
+                    {user.likes_received}
+                  </p>
+                  <p className="text-sm text-gray-400">Likes</p>
+                </div>
+              </div>
+            </motion.section>
+
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="bg-gray-800 rounded-lg shadow-md p-4"
+            >
+              <h2 className="text-lg font-semibold mb-4 text-blue-400">
+                Stats
+              </h2>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                {[
+                  { label: "Threads", value: user.threads_count },
+                  { label: "Posts", value: user.posts_count },
+                  { label: "Vouches", value: user.vouches },
+                  { label: "Credits", value: user.credits || 0 },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center">
+                    <p className="text-lg font-bold">{stat.value}</p>
+                    <p className="text-gray-400">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.section>
+
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="bg-gray-800 rounded-lg shadow-md p-4"
+            >
+              <h2 className="text-lg font-semibold mb-4 text-blue-400">
+                Information
+              </h2>
+              <div className="space-y-2 text-sm">
+                {[
+                  { label: "Status", value: user.status || "Offline" },
+                  { label: "UID", value: user.uid },
+                  { label: "Registration Date", value: user.registration_date },
+                  { label: "Last Visit", value: user.last_visit },
+                ].map((item) => (
+                  <div key={item.label} className="flex justify-between">
+                    <span className="text-gray-400">{item.label}:</span>
+                    <span>{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.section>
+          </div>
+
+          <div className="md:col-span-2 space-y-6">
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+              className="bg-gray-800 rounded-lg shadow-md p-4"
+            >
+              <h2 className="text-lg font-semibold mb-4 text-blue-400">
+                Awards
+              </h2>
+              <div className="grid grid-cols-4 gap-4 bg-gray-700 rounded-lg p-4 m-2 text-sm">
+                {/* Replace with actual award icons */}
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((award) => (
+                  <div key={award} className="text-center">
+                    <span className="text-2xl">🏆</span>
+                  </div>
+                ))}
+              </div>
+            </motion.section>
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="bg-gray-800 rounded-lg shadow-md p-4"
+            >
+              <h2 className="text-lg font-semibold mb-4 text-blue-400">
+                Signature
+              </h2>
+              <div className="bg-gray-700 rounded-lg p-4 m-2 text-sm">
+                {user.signature || "No signature set"}
+              </div>
+            </motion.section>
+
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+              className="bg-gray-800 rounded-lg shadow-md p-4"
+            >
+              <h2 className="text-lg font-semibold mb-4 text-blue-400">
+                Recent Threads
+              </h2>
+              {/* Render recent threads */}
+              <p className="text-sm">Thread list goes here...</p>
+            </motion.section>
+          </div>
         </div>
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="mt-12"
-        >
-          <h2 className="text-3xl font-bold mb-6 text-blue-400">
-            Recent Threads
-          </h2>
-          {/* Render recent threads */}
-        </motion.section>
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.7 }}
-          className="mt-12"
-        >
-          <h2 className="text-3xl font-bold mb-6 text-blue-400">
-            Recent Posts
-          </h2>
-          {/* Render recent posts */}
-        </motion.section>
       </main>
       <AnimatePresence>
         {showReputationPopup && (
