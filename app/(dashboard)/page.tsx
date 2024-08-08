@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { Alert, Button, CircularProgress } from "@mui/material";
 import ForumSummary from "@/components/ForumSummary";
 import TopicSummary from "@/components/TopicSummary";
-import SearchBar from "@/components/SearchBar";
 import StickyTopics from "@/components/AnnouncementsTopics";
 import RecentTopics from "@/components/RecentTopics";
 import AnimatedDashboard from "@/components/AnimatedDashboard";
