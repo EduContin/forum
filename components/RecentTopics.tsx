@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import { slugify } from "@/models/slugify";
 
 interface Thread {
@@ -21,8 +23,41 @@ async function getLatestThreads() {
   return response.json();
 }
 
-async function RecentTopics() {
-  const threads = await getLatestThreads();
+function RecentTopics() {
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchThreads = async () => {
+      try {
+        setIsLoading(true);
+        const latestThreads = await getLatestThreads();
+        setThreads(latestThreads);
+        setError(null);
+      } catch (err) {
+        setError("Failed to fetch threads");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchThreads();
+
+    // Set up an interval to fetch threads every 30 seconds
+    const intervalId = setInterval(fetchThreads, 30000);
+
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div className="bg-gray-800/80 backdrop-blur rounded-lg p-6 mb-8">
