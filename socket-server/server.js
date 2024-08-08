@@ -14,7 +14,7 @@ const io = new Server(server, {
   },
 });
 
-const MAX_MESSAGE_LENGTH = 100;
+const MAX_MESSAGE_LENGTH = 300;
 
 // Rate limiter configuration
 const rateLimiter = new RateLimiterMemory({
