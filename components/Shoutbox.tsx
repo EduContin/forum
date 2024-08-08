@@ -6,8 +6,9 @@ import { io, Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import customEmojis from "@/models/custom-emojis";
 
-const MAX_MESSAGE_LENGTH = 100;
+const MAX_MESSAGE_LENGTH = 300;
 const USERNAME_WIDTH = "100px"; // Adjust this value as needed
 
 interface Message {
@@ -15,11 +16,6 @@ interface Message {
   username: string;
   message: string;
 }
-
-const customEmojis: { [key: string]: string } = {
-  ":noo:": "/no.jpeg",
-  ":winter:": "/winter_soldier.gif",
-};
 
 const Shoutbox = () => {
   const { data: session } = useSession();
@@ -194,38 +190,44 @@ const Shoutbox = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="bg-gray-900 py-2 px-2 rounded-md flex items-center"
+                className="bg-gray-900 py-2 px-2 rounded-md"
               >
-                <Image
-                  src="/winter_soldier.gif"
-                  alt="Profile"
-                  className="h-7 w-7 mr-2 flex-shrink-0"
-                  width={0}
-                  height={0}
-                />
-                <div className="flex-grow min-w-0 flex items-center">
-                  <span
-                    className="text-sm mr-1"
+                <div className="flex items-start">
+                  <a href={`/users/${msg.username}`}>
+                    <Image
+                      src="/winter_soldier.gif"
+                      alt="Profile"
+                      className="h-7 w-7 mr-2 flex-shrink-0"
+                      width={0}
+                      height={0}
+                    />
+                  </a>
+                  <a
+                    href={`/users/${msg.username}`}
+                    className="text-sm mr-1 text-right mt-1"
                     style={{
-                      width: USERNAME_WIDTH,
+                      width: `${msg.username.length * 8}px`,
                       minWidth: USERNAME_WIDTH,
                       display: "inline-block",
                     }}
                   >
                     {msg.username}
-                  </span>
-                  <p className="text-gray-400 text-sm truncate">
-                    {renderMessageWithEmojis(msg.message)}
-                  </p>
+                  </a>
+                  <div className="mt-1 pl-4">
+                    <p className="text-gray-400 text-sm break-all">
+                      {renderMessageWithEmojis(msg.message)}
+                    </p>
+                  </div>
+                  <div className="flex-grow"></div>
+                  {session && session.user.name === msg.username && (
+                    <button
+                      onClick={() => handleEditMessage(msg.id)}
+                      className="text-xs text-gray-400 hover:text-blue-400 transition-colors ml-1 flex-shrink-0"
+                    >
+                      Edit
+                    </button>
+                  )}
                 </div>
-                {session && session.user.name === msg.username && (
-                  <button
-                    onClick={() => handleEditMessage(msg.id)}
-                    className="text-xs text-gray-400 hover:text-blue-400 transition-colors ml-1 flex-shrink-0"
-                  >
-                    Edit
-                  </button>
-                )}
               </motion.div>
             ))
           ) : (

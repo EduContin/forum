@@ -4,11 +4,8 @@ import { redirect } from "next/navigation";
 import { Alert, Button, CircularProgress } from "@mui/material";
 import ForumSummary from "@/components/ForumSummary";
 import TopicSummary from "@/components/TopicSummary";
-import SearchBar from "@/components/SearchBar";
 import StickyTopics from "@/components/AnnouncementsTopics";
 import RecentTopics from "@/components/RecentTopics";
-import NewTopicButton from "@/components/NewTopicButton";
-import LogoutButton from "@/components/LogoutButton";
 import AnimatedDashboard from "@/components/AnimatedDashboard";
 import MountainBackground from "@/components/MountainBackground";
 import Shoutbox from "@/components/Shoutbox";
@@ -55,7 +52,6 @@ export default async function ForumDashboard() {
               <h1 className="text-4xl font-bold mb-8 text-center">
                 Welcome, {session.user?.name}
               </h1>
-              <SearchBar />
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
                 <div className="lg:col-span-2">
                   <Shoutbox />
@@ -67,10 +63,7 @@ export default async function ForumDashboard() {
                   <RecentTopics />
                 </div>
               </div>
-              <div className="flex justify-between">
-                <NewTopicButton />
-                <LogoutButton />
-              </div>
+              <div className="flex justify-between"></div>
             </AnimatedDashboard>
           </div>
         ) : (
