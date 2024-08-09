@@ -217,12 +217,12 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
               </button>
             </div>
             {showEmojiPicker && (
-              <div className="absolute mt-2 p-2 bg-gray-700 rounded-md z-10">
+              <div className="absolute right-6 mt-2 p-2 bg-gray-700 rounded-md z-10">
                 {Object.keys(customEmojis).map((emoji) => (
                   <span
                     key={emoji}
                     onClick={() => handleEmojiClick(emoji)}
-                    className="m-1 p-1 hover:bg-gray-600 rounded cursor-pointer"
+                    className="m-1 p-1 rounded cursor-pointer"
                   >
                     <Image
                       src={customEmojis[emoji]}
