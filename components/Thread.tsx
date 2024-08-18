@@ -58,8 +58,48 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
     fetchLikes();
   }, [session, initialPosts]);
 
-  const renderContentWithEmojis = (content: string) => {
-    const parts = content.split(/(:[a-zA-Z0-9_+-]+:)/g);
+  const renderContentWithEmojisAndBBCode = (content: string) => {
+    const parsedContent = content
+      .replace(/\[b\](.*?)\[\/b\]/g, "<b>$1</b>")
+      .replace(/\[i\](.*?)\[\/i\]/g, "<i>$1</i>")
+      .replace(/\[u\](.*?)\[\/u\]/g, "<u>$1</u>")
+      .replace(/\[s\](.*?)\[\/s\]/g, "<s>$1</s>")
+      .replace(
+        /\[color=(\w+|#[0-9a-fA-F]{6})\](.*?)\[\/color\]/g,
+        "<span style='color:$1'>$2</span>",
+      )
+      .replace(
+        /\[size=(\w+)\](.*?)\[\/size\]/g,
+        "<span style='font-size:$1'>$2</span>",
+      )
+      .replace(
+        /\[align=(\w+)\](.*?)\[\/align\]/g,
+        "<div style='text-align:$1'>$2</div>",
+      )
+      .replace(
+        /\[quote\](.*?)\[\/quote\]/g,
+        "<blockquote class='border-l-4 border-gray-500 pl-4 my-2 italic'>$1</blockquote>",
+      )
+      .replace(/\[code\](.*?)\[\/code\]/g, "<pre><code>$1</code></pre>")
+      .replace(
+        /\[img\](.*?)\[\/img\]/g,
+        "<img src='$1' alt='User uploaded image' />",
+      )
+      .replace(
+        /\[url=([^\]]+)\](.*?)\[\/url\]/g,
+        "<a href='$1' target='_blank' rel='noopener noreferrer'>$2</a>",
+      )
+      .replace(
+        /\[hidden\](.*?)\[\/hidden\]/g,
+        "<span class='hidden-content'>Like this post to see the content</span>",
+      )
+      .replace(
+        /\[spoiler\](.*?)\[\/spoiler\]/g,
+        "<span class='spoiler-content'>$1</span>",
+      )
+      .replace(/\n/g, "<br>");
+
+    const parts = parsedContent.split(/(:[a-zA-Z0-9_+-]+:)/g);
 
     return parts.map((part, index) => {
       const emojiUrl = customEmojis[part as keyof typeof customEmojis];
@@ -75,7 +115,9 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
           />
         );
       }
-      return part;
+      return (
+        <span key={index} dangerouslySetInnerHTML={{ __html: part }}></span>
+      );
     });
   };
 
@@ -174,7 +216,7 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
                 </span>
               </div>
               <div className="whitespace-pre-wrap">
-                {renderContentWithEmojis(post.content)}
+                {renderContentWithEmojisAndBBCode(post.content)}
               </div>
               <div className="mt-2 flex items-center">
                 <button
