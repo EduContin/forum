@@ -28,6 +28,7 @@ exports.up = (pgm) => {
     reputation: { type: "integer", notNull: true, default: 0 },
     vouches: { type: "integer", notNull: true, default: 0 },
     last_seen: { type: "timestamp" },
+    signature: { type: "text" },
   });
 
   pgm.createTable("user_reputations", {

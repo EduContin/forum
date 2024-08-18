@@ -98,7 +98,7 @@ export default function UserProfile({
               transition={{ duration: 0.5 }}
               className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-lg mb-6 md:mb-0 md:mr-8"
             >
-              <Image
+              <img
                 src={user.avatar_url || "/winter_soldier.gif"}
                 alt={user.username}
                 width={160}
