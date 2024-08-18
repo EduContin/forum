@@ -9,12 +9,17 @@ import Image from "next/image";
 import customEmojis from "@/models/custom-emojis";
 
 const MAX_MESSAGE_LENGTH = 300;
-const USERNAME_WIDTH = "100px"; // Adjust this value as needed
+const USERNAME_WIDTH = "100px";
 
 interface Message {
   id: number;
   username: string;
   message: string;
+  avatar_url?: string;
+}
+
+interface User {
+  avatar_url: string;
 }
 
 const Shoutbox = () => {
@@ -36,19 +41,31 @@ const Shoutbox = () => {
     setSocket(newSocket);
 
     newSocket.on("message", (message: Message) => {
-      setMessages((prevMessages) => [message, ...prevMessages]);
+      fetchUserAvatar(message.username).then((avatarUrl) => {
+        setMessages((prevMessages) => [
+          { ...message, avatar_url: avatarUrl },
+          ...prevMessages,
+        ]);
+      });
     });
 
     newSocket.on("messageUpdated", (updatedMessage: Message) => {
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
-          msg.id === updatedMessage.id ? updatedMessage : msg,
+          msg.id === updatedMessage.id
+            ? { ...updatedMessage, avatar_url: msg.avatar_url }
+            : msg,
         ),
       );
     });
 
     newSocket.on("recentMessages", (recentMessages: Message[]) => {
-      setMessages(recentMessages);
+      Promise.all(
+        recentMessages.map(async (message) => {
+          const avatarUrl = await fetchUserAvatar(message.username);
+          return { ...message, avatar_url: avatarUrl };
+        }),
+      ).then(setMessages);
     });
 
     newSocket.on("message_error", (error: string) => {
@@ -59,7 +76,12 @@ const Shoutbox = () => {
     fetch("/api/v1/shoutbox/history")
       .then((response) => response.json())
       .then((data) => {
-        setMessages(data.rows);
+        Promise.all(
+          data.rows.map(async (message: Message) => {
+            const avatarUrl = await fetchUserAvatar(message.username);
+            return { ...message, avatar_url: avatarUrl };
+          }),
+        ).then(setMessages);
       })
       .catch((error) =>
         console.error("Error fetching shoutbox history:", error),
@@ -69,6 +91,19 @@ const Shoutbox = () => {
       newSocket.disconnect();
     };
   }, []);
+
+  const fetchUserAvatar = async (username: string): Promise<string> => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/v1/users/${username}`,
+      );
+      const userData: User = await response.json();
+      return userData.avatar_url;
+    } catch (error) {
+      console.error("Error fetching user avatar:", error);
+      return "/default-avatar.png"; // Provide a default avatar URL
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputMessage(e.target.value);
@@ -194,12 +229,12 @@ const Shoutbox = () => {
               >
                 <div className="flex items-start">
                   <a href={`/users/${msg.username}`}>
-                    <Image
-                      src="/winter_soldier.gif"
+                    <img
+                      src={msg.avatar_url || "/winter_soldier.gif"}
                       alt="Profile"
-                      className="h-7 w-7 mr-2 flex-shrink-0"
-                      width={0}
-                      height={0}
+                      className="h-7 w-7 mr-2 flex-shrink-0 rounded-full"
+                      width={28}
+                      height={28}
                     />
                   </a>
                   <a

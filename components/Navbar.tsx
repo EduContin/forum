@@ -3,11 +3,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import Image from "next/image";
 
 const Navbar: React.FC = () => {
   const { data: session } = useSession();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -30,6 +30,24 @@ const Navbar: React.FC = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    const fetchAvatarUrl = async () => {
+      if (session?.user?.name) {
+        try {
+          const response = await fetch(
+            `http://localhost:3000/api/v1/users/${session.user.name}`,
+          );
+          const userData = await response.json();
+          setAvatarUrl(userData.avatar_url);
+        } catch (error) {
+          console.error("Error fetching avatar URL:", error);
+        }
+      }
+    };
+
+    fetchAvatarUrl();
+  }, [session]);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -79,8 +97,8 @@ const Navbar: React.FC = () => {
                   className="flex items-center space-x-2 cursor-pointer"
                   onClick={toggleDropdown}
                 >
-                  <Image
-                    src={session.user.image || "/winter_soldier.gif"}
+                  <img
+                    src={avatarUrl || "/winter_soldier.gif"}
                     alt={session.user.name || "User"}
                     width={32}
                     height={32}
