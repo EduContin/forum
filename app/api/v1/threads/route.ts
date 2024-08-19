@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   const pageSize = parseInt(searchParams.get("pageSize") || "10");
   const categorySlug = searchParams.get("categorySlug");
   const threadId = searchParams.get("threadId");
+  const userId = searchParams.get("userId");
 
   const offset = (page - 1) * pageSize;
 
@@ -23,17 +24,32 @@ export async function GET(request: NextRequest) {
     `;
 
     const queryParams: any[] = [];
+    const whereConditions: string[] = [];
+
     if (categorySlug) {
-      query += ` WHERE LOWER(REPLACE(c.name, ' ', '-')) = $1`;
+      whereConditions.push(
+        `LOWER(REPLACE(c.name, ' ', '-')) = $${queryParams.length + 1}`,
+      );
       queryParams.push(categorySlug);
-    } else if (threadId) {
-      query += ` WHERE t.id = $1`;
+    }
+
+    if (threadId) {
+      whereConditions.push(`t.id = $${queryParams.length + 1}`);
       queryParams.push(threadId);
+    }
+
+    if (userId) {
+      whereConditions.push(`t.user_id = $${queryParams.length + 1}`);
+      queryParams.push(userId);
+    }
+
+    if (whereConditions.length > 0) {
+      query += ` WHERE ${whereConditions.join(" AND ")}`;
     }
 
     query += `
       GROUP BY t.id, u.username, c.name
-      ORDER BY t.updated_at DESC
+      ORDER BY t.created_at DESC
       LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}
     `;
 

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -19,6 +18,7 @@ export default function UserProfile({
   const [showReputationPopup, setShowReputationPopup] = useState(false);
   const [reputationChange, setReputationChange] = useState(0);
   const [reputationComment, setReputationComment] = useState("");
+  const [recentThreads, setRecentThreads] = useState([]);
   const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,6 +37,24 @@ export default function UserProfile({
       document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, []);
+
+  useEffect(() => {
+    const fetchRecentThreads = async () => {
+      try {
+        const res = await fetch(`/api/v1/threads?userId=${user.id}&pageSize=5`);
+        if (res.ok) {
+          const threads = await res.json();
+          setRecentThreads(threads);
+        } else {
+          console.error("Failed to fetch recent threads");
+        }
+      } catch (error) {
+        console.error("Error fetching recent threads:", error);
+      }
+    };
+
+    fetchRecentThreads();
+  }, [user.id]);
 
   const handleReputationSubmit = async () => {
     try {
@@ -244,8 +262,28 @@ export default function UserProfile({
               <h2 className="text-lg font-semibold mb-4 text-blue-400">
                 Recent Threads
               </h2>
-              {/* Render recent threads */}
-              <p className="text-sm">Thread list goes here...</p>
+              <div className="space-y-4">
+                {recentThreads.map((thread: any) => (
+                  <div key={thread.id} className="bg-gray-700 rounded-lg p-4">
+                    <Link href={`/threads/${thread.id}`}>
+                      <span className="text-blue-400 hover:underline font-semibold truncate">
+                        {thread.title}
+                      </span>
+                    </Link>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Posted in {thread.category_name} on{" "}
+                      {new Date(thread.created_at).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm mt-2">
+                      {thread.post_count} replies • Last post:{" "}
+                      {new Date(thread.last_post_at).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+                {recentThreads.length === 0 && (
+                  <p className="text-gray-400">No recent threads found.</p>
+                )}
+              </div>
             </motion.section>
           </div>
         </div>
@@ -359,6 +397,15 @@ export default function UserProfile({
           </motion.div>
         )}
       </AnimatePresence>
+      <style jsx>{`
+        .truncate {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 100%;
+          display: block;
+        }
+      `}</style>
     </div>
   );
 }
