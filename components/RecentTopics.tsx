@@ -44,10 +44,8 @@ function RecentTopics() {
 
     fetchThreads();
 
-    // Set up an interval to fetch threads every 30 seconds
     const intervalId = setInterval(fetchThreads, 30000);
 
-    // Clean up the interval when the component unmounts
     return () => clearInterval(intervalId);
   }, []);
 
@@ -67,17 +65,34 @@ function RecentTopics() {
           <li key={thread.id} className="bg-gray-900 p-4 rounded shadow">
             <a
               href={`/thread/${slugify(thread.title)}-${thread.id}`}
-              className="font-semibold"
+              className="font-semibold truncate"
+              title={thread.title}
             >
               {thread.title}
             </a>
             <div className="text-sm text-gray-500">
-              By {thread.username} | Last activity:{" "}
-              {new Date(thread.last_post_at).toLocaleString()}
+              By
+              <a
+                href={`/users/${thread.username}`}
+                className="font-semibold text-gray-300"
+              >
+                {" "}
+                {thread.username}{" "}
+              </a>
+              | Last activity: {new Date(thread.last_post_at).toLocaleString()}
             </div>
           </li>
         ))}
       </ul>
+      <style jsx>{`
+        .truncate {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 100%;
+          display: block;
+        }
+      `}</style>
     </div>
   );
 }
