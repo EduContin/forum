@@ -28,17 +28,44 @@ const CreateThreadForm: React.FC<CreateThreadFormProps> = ({ categoryId }) => {
     null,
   );
 
+  const MAX_CHARACTERS = 5000; // Set the maximum character limit
+  const CHARACTERS_PER_LINE = 1000; // Set the number of characters per line
+  const MAX_TITLE_CHARACTERS = 70;
+
   const updateContent = useCallback(
     (newContent: string) => {
-      setContent(newContent);
-      setContentHistory((prev) => [
-        ...prev.slice(0, historyIndex + 1),
-        newContent,
-      ]);
-      setHistoryIndex((prev) => prev + 1);
+      if (newContent.length <= MAX_CHARACTERS) {
+        // Apply auto line break
+        const lines = newContent.split("\n");
+        const formattedLines = lines.map((line) => {
+          if (line.length > CHARACTERS_PER_LINE) {
+            const chunks = [];
+            for (let i = 0; i < line.length; i += CHARACTERS_PER_LINE) {
+              chunks.push(line.slice(i, i + CHARACTERS_PER_LINE));
+            }
+            return chunks.join("\n");
+          }
+          return line;
+        });
+        const formattedContent = formattedLines.join("\n");
+
+        setContent(formattedContent);
+        setContentHistory((prev) => [
+          ...prev.slice(0, historyIndex + 1),
+          formattedContent,
+        ]);
+        setHistoryIndex((prev) => prev + 1);
+      }
     },
     [historyIndex],
   );
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value;
+    if (newTitle.length <= MAX_TITLE_CHARACTERS) {
+      setTitle(newTitle);
+    }
+  };
 
   const undo = useCallback(() => {
     if (historyIndex > 0) {
@@ -242,10 +269,14 @@ const CreateThreadForm: React.FC<CreateThreadFormProps> = ({ categoryId }) => {
           type="text"
           id="title"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={handleTitleChange}
           className="w-full px-3 py-2 bg-gray-700/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           required
+          maxLength={MAX_TITLE_CHARACTERS}
         />
+        <div className="text-sm text-gray-400 mt-1">
+          {title.length}/{MAX_TITLE_CHARACTERS} characters
+        </div>
       </div>
       <div className="mb-4">
         <label htmlFor="content" className="block mb-2">
@@ -366,6 +397,9 @@ const CreateThreadForm: React.FC<CreateThreadFormProps> = ({ categoryId }) => {
             rows={5}
             required
           />
+          <div className="text-sm text-gray-400 mt-1">
+            {content.length}/{MAX_CHARACTERS} characters
+          </div>
           <button
             type="button"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}

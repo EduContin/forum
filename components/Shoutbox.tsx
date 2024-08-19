@@ -232,7 +232,7 @@ const Shoutbox = () => {
                     <img
                       src={msg.avatar_url || "/winter_soldier.gif"}
                       alt="Profile"
-                      className="h-7 w-7 mr-2 flex-shrink-0 rounded-full"
+                      className="h-7 w-7 mr-2 flex-shrink-0"
                       width={28}
                       height={28}
                     />
