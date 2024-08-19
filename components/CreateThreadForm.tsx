@@ -439,7 +439,7 @@ const CreateThreadForm: React.FC<CreateThreadFormProps> = ({ categoryId }) => {
           <div className="mb-4">
             <h3 className="text-xl font-bold mb-2">Preview:</h3>
             <div
-              className="bg-gray-700/50 rounded-md p-4 whitespace-pre-wrap"
+              className="bg-gray-700/50 rounded-md p-4 whitespace-pre-wrap break-all"
               dangerouslySetInnerHTML={{ __html: formatContent(content) }}
             />
           </div>
