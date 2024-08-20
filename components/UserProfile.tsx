@@ -21,6 +21,15 @@ export default function UserProfile({
   const [recentThreads, setRecentThreads] = useState([]);
   const popupRef = useRef<HTMLDivElement>(null);
 
+  // TODO: Implement awards system API retrival
+  const awards = [
+    { name: "Diamond.svg" },
+    { name: "Diamond.svg" },
+    { name: "Diamond.svg" },
+    { name: "Diamond.svg" },
+    // Add more awards as needed
+  ];
+
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
       if (
@@ -136,75 +145,54 @@ export default function UserProfile({
           </div>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-1 space-y-6">
+      <main className="container mx-auto px-2 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+          {/* Left Column */}
+          <div className="md:col-span-2 space-y-3">
+            {/* Reputation and Likes */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-gray-800 rounded-lg shadow-md p-6"
+              className="bg-gray-800 rounded-lg shadow-md p-3"
             >
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-gray-700 rounded-lg">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="text-center p-2 bg-gray-700 rounded-lg">
                   <p
-                    className={`text-3xl font-bold ${user.reputation >= 0 ? "text-green-500" : "text-red-500"}`}
+                    className={`text-2xl font-bold ${user.reputation >= 0 ? "text-green-500" : "text-red-500"}`}
                   >
                     {user.reputation}
                   </p>
-                  <p className="text-sm text-gray-400">Reputation</p>
+                  <p className="text-xs text-gray-400">Reputation</p>
                   <span>
                     <button
-                      className="font-bold text-xl text-blue-400"
+                      className="font-bold text-base text-blue-400"
                       onClick={() => setShowReputationPopup(true)}
                     >
                       +
                     </button>
                   </span>
                 </div>
-                <div className="text-center p-4 bg-gray-700 rounded-lg">
-                  <p className="text-3xl font-bold text-green-500">
+                <div className="text-center p-2 bg-gray-700 rounded-lg">
+                  <p className="text-2xl font-bold text-green-500">
                     {user.likes_received}
                   </p>
-                  <p className="text-sm text-gray-400">Likes</p>
+                  <p className="text-xs text-gray-400">Likes</p>
                 </div>
               </div>
             </motion.section>
 
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="bg-gray-800 rounded-lg shadow-md p-4"
-            >
-              <h2 className="text-lg font-semibold mb-4 text-blue-400">
-                Stats
-              </h2>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                {[
-                  { label: "Threads", value: user.threads_count },
-                  { label: "Posts", value: user.posts_count },
-                  { label: "Vouches", value: user.vouches },
-                  { label: "Credits", value: user.credits || 0 },
-                ].map((stat) => (
-                  <div key={stat.label} className="text-center">
-                    <p className="text-lg font-bold">{stat.value}</p>
-                    <p className="text-gray-400">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.section>
-
+            {/* Information */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-gray-800 rounded-lg shadow-md p-4"
+              className="bg-gray-800 rounded-lg shadow-md p-3"
             >
-              <h2 className="text-lg font-semibold mb-4 text-blue-400">
+              <h2 className="text-base font-semibold mb-2 text-blue-400">
                 Information
               </h2>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-1 text-xs">
                 {[
                   { label: "Status", value: user.status || "Offline" },
                   { label: "UID", value: user.uid },
@@ -218,63 +206,108 @@ export default function UserProfile({
                 ))}
               </div>
             </motion.section>
+
+            {/* Blank space for future usergroup banners */}
+            <div className="h-32"></div>
           </div>
 
-          <div className="md:col-span-2 space-y-6">
+          {/* Center Column */}
+          <div className="md:col-span-3 space-y-3">
+            {/* Stats */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.8 }}
-              className="bg-gray-800 rounded-lg shadow-md p-4"
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="bg-gray-800 rounded-lg shadow-md p-3"
             >
-              <h2 className="text-lg font-semibold mb-4 text-blue-400">
-                Awards
+              <h2 className="text-base font-semibold mb-2 text-blue-400">
+                Stats
               </h2>
-              <div className="grid grid-cols-4 gap-4 bg-gray-700 rounded-lg p-4 m-2 text-sm">
-                {/* Replace with actual award icons */}
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((award) => (
-                  <div key={award} className="text-center">
-                    <span className="text-2xl">🏆</span>
+              <div className="flex justify-between text-xs">
+                {[
+                  { label: "Threads", value: user.threads_count },
+                  { label: "Posts", value: user.posts_count },
+                  { label: "Vouches", value: user.vouches },
+                  { label: "Credits", value: user.credits || 0 },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center">
+                    <p className="font-bold">{stat.value}</p>
+                    <p className="text-gray-400">{stat.label}</p>
                   </div>
                 ))}
               </div>
             </motion.section>
+
+            {/* Signature (Ad Banner) */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
-              className="bg-gray-800 rounded-lg shadow-md p-4"
+              className="bg-gray-800 rounded-lg shadow-md p-3 mt-auto"
             >
-              <h2 className="text-lg font-semibold mb-4 text-blue-400">
+              <h2 className="text-base font-semibold mb-2 text-blue-400">
                 Signature
               </h2>
-              <div className="bg-gray-700 rounded-lg p-4 m-2 text-sm">
+              <div className="bg-gray-700 rounded-lg p-2 text-xs">
                 {user.signature || "No signature set"}
               </div>
             </motion.section>
+          </div>
 
+          {/* Right Column */}
+          <div className="md:col-span-2 space-y-3">
+            {/* Awards */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+              className="bg-gray-800 rounded-lg shadow-md p-3"
+            >
+              <h2 className="text-base font-semibold mb-2 text-blue-400">
+                Awards
+              </h2>
+              <div className="bg-gray-900 rounded-lg p-2 min-h-[200px] max-h-[400px] overflow-y-auto">
+                <div className="flex flex-wrap gap-2 p-1 items-start content-start">
+                  {awards.map((award, index) => (
+                    <div key={index} className="w-7 h-7 flex-shrink-0">
+                      <img
+                        src={`/badges/${award.name}`}
+                        alt={award.name.slice(0, -4)}
+                        className="w-full h-full object-contain"
+                        title={award.name.slice(0, -4)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.section>
+
+            {/* Recent Threads */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.7 }}
-              className="bg-gray-800 rounded-lg shadow-md p-4"
+              className="bg-gray-800 rounded-lg shadow-md p-3"
             >
-              <h2 className="text-lg font-semibold mb-4 text-blue-400">
+              <h2 className="text-base font-semibold mb-2 text-blue-400">
                 Recent Threads
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {recentThreads.map((thread: any) => (
-                  <div key={thread.id} className="bg-gray-700 rounded-lg p-4">
+                  <div
+                    key={thread.id}
+                    className="bg-gray-700 rounded-lg p-2 text-xs"
+                  >
                     <Link href={`/threads/${thread.id}`}>
-                      <span className="text-blue-400 hover:underline font-semibold truncate">
+                      <span className="text-blue-400 hover:underline font-semibold truncate block">
                         {thread.title}
                       </span>
                     </Link>
-                    <p className="text-sm text-gray-400 mt-1">
+                    <p className="text-gray-400 mt-1">
                       Posted in {thread.category_name} on{" "}
                       {new Date(thread.created_at).toLocaleDateString()}
                     </p>
-                    <p className="text-sm mt-2">
+                    <p className="mt-1">
                       {thread.post_count} replies • Last post:{" "}
                       {new Date(thread.last_post_at).toLocaleString()}
                     </p>

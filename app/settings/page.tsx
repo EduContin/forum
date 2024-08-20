@@ -1,8 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import debounce from "lodash/debounce";
+
+const MAX_CHARACTERS = 250; // Set the maximum character limit
+const CHARACTERS_PER_LINE = 250; // Set the number of characters per line
+const MAX_TITLE_CHARACTERS = 70;
 
 export default function SettingsPage() {
   const { data: session } = useSession();
@@ -10,15 +15,187 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [signature, setSignature] = useState("");
   const [avatarUrl, setavatarUrl] = useState("");
+  const [historyIndex, setHistoryIndex] = useState(0);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [contentHistory, setContentHistory] = useState<string[]>([""]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [selectedFontSize, setSelectedFontSize] = useState("medium");
+  const [selectedColor, setSelectedColor] = useState("#000000");
+  const [selectionRange, setSelectionRange] = useState<[number, number] | null>(
+    null,
+  );
 
-  if (!session) {
-    router.push("/login");
-  }
+  const updateContent = useCallback(
+    (newContent: string) => {
+      if (newContent.length <= MAX_CHARACTERS) {
+        // Apply auto line break
+        const lines = newContent.split("\n");
+        const formattedLines = lines.map((line) => {
+          if (line.length > CHARACTERS_PER_LINE) {
+            const chunks = [];
+            for (let i = 0; i < line.length; i += CHARACTERS_PER_LINE) {
+              chunks.push(line.slice(i, i + CHARACTERS_PER_LINE));
+            }
+            return chunks.join("\n");
+          }
+          return line;
+        });
+        const formattedContent = formattedLines.join("\n");
+
+        setSignature(formattedContent);
+        setContentHistory((prev) => [
+          ...prev.slice(0, historyIndex + 1),
+          formattedContent,
+        ]);
+        setHistoryIndex((prev) => prev + 1);
+      }
+    },
+    [historyIndex],
+  );
+
+  const insertTextStyle = useCallback(
+    (openTag: string, closeTag: string) => {
+      const textarea = textareaRef.current;
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = signature.substring(start, end);
+        const newContent =
+          signature.substring(0, start) +
+          openTag +
+          selectedText +
+          closeTag +
+          signature.substring(end);
+        updateContent(newContent);
+        textarea.focus();
+        textarea.setSelectionRange(
+          start + openTag.length,
+          end + openTag.length,
+        );
+      }
+    },
+    [signature, updateContent],
+  );
+
+  const insertColorTag = useCallback(
+    (color: string) => {
+      const textarea = textareaRef.current;
+      if (textarea) {
+        const start = selectionRange
+          ? selectionRange[0]
+          : textarea.selectionStart;
+        const end = selectionRange ? selectionRange[1] : textarea.selectionEnd;
+        let selectedText = signature.substring(start, end);
+
+        // Remove existing color tags if any
+        selectedText = selectedText.replace(
+          /\[color=[^\]]+\]|\[\/color\]/g,
+          "",
+        );
+
+        // Add new color tag
+        const newContent =
+          signature.substring(0, start) +
+          `[color=${color}]${selectedText}[/color]` +
+          signature.substring(end);
+
+        updateContent(newContent);
+        textarea.focus();
+        const newStart = start;
+        const newEnd = start + `[color=${color}]${selectedText}[/color]`.length;
+        textarea.setSelectionRange(newStart, newEnd);
+        setSelectionRange([newStart, newEnd]);
+      }
+    },
+    [signature, updateContent, selectionRange],
+  );
+
+  const insertImage = useCallback(() => {
+    const url = prompt("Enter image URL:");
+    if (url) {
+      insertTextStyle(`[img]${url}[/img]`, "");
+    }
+  }, [insertTextStyle]);
+
+  const insertLink = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = signature.substring(start, end);
+      const url = prompt("Enter URL:");
+      const text = selectedText || prompt("Enter link text:");
+      if (url && text) {
+        const newContent =
+          signature.substring(0, start) +
+          `[url=${url}]${text}[/url]` +
+          signature.substring(end);
+        updateContent(newContent);
+      }
+    }
+  }, [signature, updateContent]);
+
+  const handleColorChange = debounce((color: string) => {
+    setSelectedColor(color);
+    insertColorTag(color);
+  }, 200);
+
+  const handleFontSizeChange = (size: string) => {
+    setSelectedFontSize(size);
+    insertTextStyle(`[size=${size}]`, "[/size]");
+  };
+
+  const formatContent = (signature: string) => {
+    return signature
+      .replace(/\[b\](.*?)\[\/b\]/g, "<b>$1</b>")
+      .replace(/\[i\](.*?)\[\/i\]/g, "<i>$1</i>")
+      .replace(/\[u\](.*?)\[\/u\]/g, "<u>$1</u>")
+      .replace(/\[s\](.*?)\[\/s\]/g, "<s>$1</s>")
+      .replace(
+        /\[color=(\w+|#[0-9a-fA-F]{6})\](.*?)\[\/color\]/g,
+        "<span style='color:$1'>$2</span>",
+      )
+      .replace(
+        /\[size=(\w+)\](.*?)\[\/size\]/g,
+        "<span style='font-size:$1'>$2</span>",
+      )
+      .replace(
+        /\[align=(\w+)\](.*?)\[\/align\]/g,
+        "<div style='text-align:$1'>$2</div>",
+      )
+      .replace(
+        /\[quote\](.*?)\[\/quote\]/g,
+        "<blockquote class='border-l-4 border-gray-500 pl-4 my-2 italic'>$1</blockquote>",
+      )
+      .replace(/\[code\](.*?)\[\/code\]/g, "<pre><code>$1</code></pre>")
+      .replace(
+        /\[img\](.*?)\[\/img\]/g,
+        "<img src='$1' alt='User uploaded image' />",
+      )
+      .replace(
+        /\[url=([^\]]+)\](.*?)\[\/url\]/g,
+        "<a href='$1' target='_blank' rel='noopener noreferrer'>$2</a>",
+      )
+      .replace(
+        /\[hidden\](.*?)\[\/hidden\]/g,
+        "<span class='hidden-signature'>Like this post to see the signature</span>",
+      )
+      .replace(
+        /\[spoiler\](.*?)\[\/spoiler\]/g,
+        "<span class='spoiler-signature'>$1</span>",
+      )
+      .replace(/\n/g, "<br>");
+  };
+
+  useEffect(() => {
+    if (!session) {
+      router.push("/login");
+    }
+  }, [router, session]);
 
   const updateSetting = async (settingType: string, data: any) => {
     try {
@@ -103,10 +280,116 @@ export default function SettingsPage() {
             <label htmlFor="signature" className="block mb-1">
               Signature
             </label>
+            <div className="mb-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => insertTextStyle("[b]", "[/b]")}
+                className="px-2 py-1 bg-gray-600 text-white rounded"
+              >
+                B
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTextStyle("[i]", "[/i]")}
+                className="px-2 py-1 bg-gray-600 text-white rounded"
+              >
+                I
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTextStyle("[u]", "[/u]")}
+                className="px-2 py-1 bg-gray-600 text-white rounded"
+              >
+                U
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTextStyle("[s]", "[/s]")}
+                className="px-2 py-1 bg-gray-600 text-white rounded"
+              >
+                S
+              </button>
+              <input
+                type="color"
+                value={selectedColor}
+                onChange={(e) => handleColorChange(e.target.value)}
+                className="w-8 h-8 rounded cursor-pointer"
+              />
+              <select
+                value={selectedFontSize}
+                onChange={(e) => handleFontSizeChange(e.target.value)}
+                className="px-2 py-1 bg-gray-600 text-white rounded"
+              >
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+              <select
+                onChange={(e) =>
+                  insertTextStyle(`[align=${e.target.value}]`, "[/align]")
+                }
+                className="px-2 py-1 bg-gray-600 text-white rounded"
+              >
+                <option value="left">Left</option>
+                <option value="center">Center</option>
+                <option value="right">Right</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => insertTextStyle("[quote]", "[/quote]")}
+                className="px-2 py-1 bg-gray-600 text-white rounded"
+              >
+                Quote
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTextStyle("[code]", "[/code]")}
+                className="px-2 py-1 bg-gray-600 text-white rounded"
+              >
+                Code
+              </button>
+              <button
+                type="button"
+                onClick={insertImage}
+                className="px-2 py-1 bg-gray-600 text-white rounded"
+              >
+                Image
+              </button>
+              <button
+                type="button"
+                onClick={insertLink}
+                className="px-2 py-1 bg-gray-600 text-white rounded"
+              >
+                Link
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTextStyle("[hidden]", "[/hidden]")}
+                className="px-2 py-1 bg-gray-600 text-white rounded"
+              >
+                Hidden
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTextStyle("[spoiler]", "[/spoiler]")}
+                className="px-2 py-1 bg-gray-600 text-white rounded"
+              >
+                Spoiler
+              </button>
+            </div>
             <textarea
               id="signature"
+              ref={textareaRef}
               value={signature}
-              onChange={(e) => setSignature(e.target.value)}
+              onChange={(e) => updateContent(e.target.value)}
+              onSelect={() => {
+                if (textareaRef.current) {
+                  setSelectionRange([
+                    textareaRef.current.selectionStart,
+                    textareaRef.current.selectionEnd,
+                  ]);
+                }
+              }}
               className="w-full px-3 py-2 border rounded"
               required
             />

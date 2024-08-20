@@ -9,7 +9,6 @@ import Image from "next/image";
 import customEmojis from "@/models/custom-emojis";
 
 const MAX_MESSAGE_LENGTH = 300;
-const USERNAME_WIDTH = "100px";
 
 interface Message {
   id: number;
