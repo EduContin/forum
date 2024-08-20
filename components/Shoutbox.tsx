@@ -228,32 +228,31 @@ const Shoutbox = () => {
                 className="bg-gray-900 py-2 px-2 rounded-md"
               >
                 <div className="flex items-start">
-                  <a href={`/users/${msg.username}`}>
+                  <a href={`/users/${msg.username}`} className="flex-shrink-0">
                     <img
                       src={msg.avatar_url || "/winter_soldier.gif"}
                       alt="Profile"
-                      className="h-7 w-7 mr-2 flex-shrink-0"
+                      className="h-7 w-7 mr-2"
                       width={28}
                       height={28}
                     />
                   </a>
                   <a
                     href={`/users/${msg.username}`}
-                    className="text-sm mr-1 text-right mt-1"
+                    className="text-sm mr-1 text-right mt-1 flex-shrink-0"
                     style={{
                       width: `${msg.username.length * 8}px`,
-                      minWidth: USERNAME_WIDTH,
+                      minWidth: "100px",
                       display: "inline-block",
                     }}
                   >
                     {msg.username}
                   </a>
-                  <div className="mt-1 pl-4">
-                    <p className="text-gray-400 text-sm break-all">
+                  <div className="mt-1 pl-4 flex-grow overflow-hidden">
+                    <p className="text-gray-400 text-sm break-words">
                       {renderMessageWithEmojis(msg.message)}
                     </p>
                   </div>
-                  <div className="flex-grow"></div>
                   {session && session.user.name === msg.username && (
                     <button
                       onClick={() => handleEditMessage(msg.id)}
