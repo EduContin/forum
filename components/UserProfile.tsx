@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import customEmojis from "@/models/custom-emojis";
 
 type UserProfileProps = {
   user: any;
@@ -64,6 +65,69 @@ export default function UserProfile({
 
     fetchRecentThreads();
   }, [user.id]);
+
+  const renderContentWithEmojisAndBBCode = (content: string) => {
+    const parsedContent = content
+      .replace(/\[b\](.*?)\[\/b\]/g, "<b>$1</b>")
+      .replace(/\[i\](.*?)\[\/i\]/g, "<i>$1</i>")
+      .replace(/\[u\](.*?)\[\/u\]/g, "<u>$1</u>")
+      .replace(/\[s\](.*?)\[\/s\]/g, "<s>$1</s>")
+      .replace(
+        /\[color=(\w+|#[0-9a-fA-F]{6})\](.*?)\[\/color\]/g,
+        "<span style='color:$1'>$2</span>",
+      )
+      .replace(
+        /\[size=(\w+)\](.*?)\[\/size\]/g,
+        "<span style='font-size:$1'>$2</span>",
+      )
+      .replace(
+        /\[align=(\w+)\](.*?)\[\/align\]/g,
+        "<div style='text-align:$1'>$2</div>",
+      )
+      .replace(
+        /\[quote\](.*?)\[\/quote\]/g,
+        "<blockquote class='border-l-4 border-gray-500 pl-4 my-2 italic'>$1</blockquote>",
+      )
+      .replace(/\[code\](.*?)\[\/code\]/g, "<pre><code>$1</code></pre>")
+      .replace(
+        /\[img\](.*?)\[\/img\]/g,
+        "<img src='$1' alt='User uploaded image' />",
+      )
+      .replace(
+        /\[url=([^\]]+)\](.*?)\[\/url\]/g,
+        "<a href='$1' target='_blank' rel='noopener noreferrer'>$2</a>",
+      )
+      .replace(
+        /\[hidden\](.*?)\[\/hidden\]/g,
+        "<span class='hidden-content'>Like this post to see the content</span>",
+      )
+      .replace(
+        /\[spoiler\](.*?)\[\/spoiler\]/g,
+        "<span class='spoiler-content'>$1</span>",
+      )
+      .replace(/\n/g, "<br>");
+
+    const parts = parsedContent.split(/(:[a-zA-Z0-9_+-]+:)/g);
+
+    return parts.map((part, index) => {
+      const emojiUrl = customEmojis[part as keyof typeof customEmojis];
+      if (emojiUrl) {
+        return (
+          <Image
+            key={index}
+            src={emojiUrl}
+            alt={part}
+            width={20}
+            height={20}
+            className="inline-block h-7 w-7"
+          />
+        );
+      }
+      return (
+        <span key={index} dangerouslySetInnerHTML={{ __html: part }}></span>
+      );
+    });
+  };
 
   const handleReputationSubmit = async () => {
     try {
@@ -223,7 +287,7 @@ export default function UserProfile({
               <h2 className="text-base font-semibold mb-2 text-blue-400">
                 Stats
               </h2>
-              <div className="flex justify-between text-xs">
+              <div className="flex justify-between px-10">
                 {[
                   { label: "Threads", value: user.threads_count },
                   { label: "Posts", value: user.posts_count },
@@ -231,8 +295,8 @@ export default function UserProfile({
                   { label: "Credits", value: user.credits || 0 },
                 ].map((stat) => (
                   <div key={stat.label} className="text-center">
-                    <p className="font-bold">{stat.value}</p>
-                    <p className="text-gray-400">{stat.label}</p>
+                    <p className="font-bold text-xm">{stat.value}</p>
+                    <p className="text-gray-400 text-xs">{stat.label}</p>
                   </div>
                 ))}
               </div>
@@ -248,8 +312,9 @@ export default function UserProfile({
               <h2 className="text-base font-semibold mb-2 text-blue-400">
                 Signature
               </h2>
-              <div className="bg-gray-700 rounded-lg p-2 text-xs">
-                {user.signature || "No signature set"}
+              <div className="bg-gray-700 rounded-lg p-2 text-xs whitespace-pre-wrap">
+                {renderContentWithEmojisAndBBCode(user.signature) ||
+                  "No signature set"}
               </div>
             </motion.section>
           </div>
@@ -298,7 +363,7 @@ export default function UserProfile({
                     key={thread.id}
                     className="bg-gray-700 rounded-lg p-2 text-xs"
                   >
-                    <Link href={`/threads/${thread.id}`}>
+                    <Link href={`/thread/${thread.id}`}>
                       <span className="text-blue-400 hover:underline font-semibold truncate block">
                         {thread.title}
                       </span>
