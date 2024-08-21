@@ -7,7 +7,6 @@ import debounce from "lodash/debounce";
 
 const MAX_CHARACTERS = 250; // Set the maximum character limit
 const CHARACTERS_PER_LINE = 250; // Set the number of characters per line
-const MAX_TITLE_CHARACTERS = 70;
 
 export default function SettingsPage() {
   const { data: session } = useSession();
@@ -21,7 +20,8 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [contentHistory, setContentHistory] = useState<string[]>([""]);
+  const [, setContentHistory] = useState<string[]>([""]);
+  const [showPreview, setShowPreview] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [selectedFontSize, setSelectedFontSize] = useState("medium");
   const [selectedColor, setSelectedColor] = useState("#000000");
@@ -393,6 +393,24 @@ export default function SettingsPage() {
               className="w-full px-3 py-2 border rounded"
               required
             />
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => setShowPreview(!showPreview)}
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                {showPreview ? "Hide Preview" : "Show Preview"}
+              </button>
+            </div>
+            {showPreview && (
+              <div className="mb-4">
+                <h3 className="text-xl font-bold mb-2">Preview:</h3>
+                <div
+                  className="bg-gray-700/50 rounded-md p-4 whitespace-pre-wrap break-all"
+                  dangerouslySetInnerHTML={{ __html: formatContent(signature) }}
+                />
+              </div>
+            )}
           </div>
           <button
             type="submit"
