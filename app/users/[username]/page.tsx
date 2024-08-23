@@ -9,7 +9,7 @@ async function fetchUserProfile(username: string) {
   );
 
   if (!res.ok) {
-    throw new Error("Failed to fetch user profile");
+    return res.status === 404 ? null : null;
   }
 
   return res.json();
