@@ -31,6 +31,36 @@ export default function UserProfile({
     // Add more awards as needed
   ];
 
+  const limitTitle = (title: string, maxLength: number = 70): string => {
+    if (title.length > maxLength) {
+      return title.slice(0, maxLength - 3) + "...";
+    }
+    return title;
+  };
+
+  const timeSinceLastActivity = (lastActivity: string): string => {
+    const now = new Date();
+    const lastActivityTime = new Date(lastActivity);
+    const delta = now.getTime() - lastActivityTime.getTime();
+
+    const minutes = Math.floor(delta / 60000);
+    const hours = Math.floor(delta / 3600000);
+    const days = Math.floor(delta / 86400000);
+    const months = Math.floor(days / 30);
+
+    if (months >= 1) {
+      return `${months} month${months > 1 ? "s" : ""} ago`;
+    } else if (days >= 1) {
+      return `${days} day${days > 1 ? "s" : ""} ago`;
+    } else if (hours >= 1) {
+      return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    } else if (minutes >= 1) {
+      return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    } else {
+      return "just now";
+    }
+  };
+
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
       if (
@@ -364,8 +394,11 @@ export default function UserProfile({
                     className="bg-gray-700 rounded-lg p-2 text-xs"
                   >
                     <Link href={`/thread/${thread.id}`}>
-                      <span className="text-blue-400 hover:underline font-semibold truncate block">
-                        {thread.title}
+                      <span
+                        className="text-blue-400 hover:underline font-semibold truncate block"
+                        title={thread.title}
+                      >
+                        {limitTitle(thread.title)}
                       </span>
                     </Link>
                     <p className="text-gray-400 mt-1">
@@ -374,7 +407,7 @@ export default function UserProfile({
                     </p>
                     <p className="mt-1">
                       {thread.post_count} replies • Last post:{" "}
-                      {new Date(thread.last_post_at).toLocaleString()}
+                      {timeSinceLastActivity(thread.last_post_at)}
                     </p>
                   </div>
                 ))}
@@ -495,15 +528,6 @@ export default function UserProfile({
           </motion.div>
         )}
       </AnimatePresence>
-      <style jsx>{`
-        .truncate {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          max-width: 100%;
-          display: block;
-        }
-      `}</style>
     </div>
   );
 }
