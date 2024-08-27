@@ -91,6 +91,16 @@ export async function POST(request: NextRequest) {
     const threadId = result.rows[0].thread_id;
     const slug = slugify(title);
 
+    // Increment the threads_count on the users table
+    await database.query({
+      text: `
+        UPDATE users
+        SET threads_count = threads_count + 1
+        WHERE id = $1
+      `,
+      values: [userId],
+    });
+
     return NextResponse.json({ threadId, slug }, { status: 201 });
   } catch (error) {
     console.error("Error creating thread:", error);
