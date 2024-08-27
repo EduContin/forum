@@ -319,14 +319,30 @@ export default function UserProfile({
               </h2>
               <div className="flex justify-between px-10">
                 {[
-                  { label: "Threads", value: user.threads_count },
+                  {
+                    label: "Threads",
+                    value: user.threads_count,
+                    link: `/users/${user.username}/threads`,
+                  },
                   { label: "Posts", value: user.posts_count },
                   { label: "Vouches", value: user.vouches },
                   { label: "Credits", value: user.credits || 0 },
                 ].map((stat) => (
                   <div key={stat.label} className="text-center">
-                    <p className="font-bold text-xm">{stat.value}</p>
-                    <p className="text-gray-400 text-xs">{stat.label}</p>
+                    {stat.link ? (
+                      <Link
+                        href={stat.link}
+                        className="hover:text-blue-400 transition-colors"
+                      >
+                        <p className="font-bold text-xm">{stat.value}</p>
+                        <p className="text-gray-400 text-xs">{stat.label}</p>
+                      </Link>
+                    ) : (
+                      <>
+                        <p className="font-bold text-xm">{stat.value}</p>
+                        <p className="text-gray-400 text-xs">{stat.label}</p>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>

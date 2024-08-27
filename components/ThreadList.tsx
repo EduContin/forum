@@ -81,7 +81,7 @@ const ThreadList: React.FC<ThreadListProps> = ({ threads }) => {
                 <td className="py-3 px-4 border-b border-gray-600/50">
                   <Link
                     href={`/thread/${slugify(thread.title)}-${thread.id}`}
-                    className="text-blue-400 hover:text-blue-300 hover:underline flex items-center"
+                    className="text-blue-400 hover:text-blue-300 flex items-center"
                   >
                     <FaComments className="mr-2 flex-shrink-0" />
                     <span className="truncate" title={thread.title}>
@@ -90,7 +90,7 @@ const ThreadList: React.FC<ThreadListProps> = ({ threads }) => {
                   </Link>
                 </td>
                 <td className="py-3 px-4 border-b border-gray-600/50 text-gray-300">
-                  <div className="flex items-center">
+                  <div className="flex items-center hover:text-gray-200">
                     <FaUser className="mr-2 text-gray-400 flex-shrink-0" />
                     <a href={`/users/${thread.username}`}>{thread.username}</a>
                   </div>
