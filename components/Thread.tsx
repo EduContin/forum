@@ -12,6 +12,7 @@ interface Post {
   username: string;
   created_at: string;
   user_id: number;
+  avatar_url: string;
   likes_count: number;
   is_liked_by_user: boolean;
 }
@@ -38,7 +39,7 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
         const postIds = initialPosts.map((post) => post.id).join(",");
         try {
           const response = await fetch(
-            `/api/v1/likes?postIds=${postIds}&userId=${session.user.id}`,
+            `/api/v1/likes?postIds=${postIds} ${session.user.id}`,
           );
           if (response.ok) {
             const likedPosts = await response.json();
@@ -196,21 +197,25 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
       <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 mb-2">
         <h2 className="text-2xl font-bold mb-4">{thread.title}</h2>
         <p className="text-sm text-gray-400 mb-4">
-          Posted by {thread.username} in {thread.category_name} on{" "}
+          Posted by
+          <a href={`/users/${thread.username}`}> {thread.username} </a>
+          in {thread.category_name} on{" "}
           {new Date(thread.created_at).toLocaleString()}
         </p>
         <div className="space-y-4">
           {posts.map((post) => (
             <div key={post.id} className="bg-gray-700/50 rounded-lg p-4">
               <div className="flex items-center mb-2">
-                <Image
-                  src={`https://avatars.dicebear.com/api/identicon/${post.user_id}.svg`}
+                <img
+                  src={post.avatar_url || `/winter_soldier.gif`}
                   alt="Profile Picture"
                   width={40}
                   height={40}
-                  className="rounded-full mr-2"
+                  className="rounded-lg mr-2 h-14 w-14"
                 />
-                <span className="font-semibold">{post.username}</span>
+                <a href={`/users/${thread.username}`} className="font-semibold">
+                  {post.username}
+                </a>
                 <span className="text-sm text-gray-400 ml-auto">
                   {new Date(post.created_at).toLocaleString()}
                 </span>

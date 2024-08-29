@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     const result = await database.query({
       text: `
-        SELECT p.*, u.username
+        SELECT p.*, u.username, u.avatar_url
         FROM posts p
         JOIN users u ON p.user_id = u.id
         WHERE p.thread_id = $1

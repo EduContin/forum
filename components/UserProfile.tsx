@@ -217,7 +217,7 @@ export default function UserProfile({
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-lg mb-6 md:mb-0 md:mr-8"
+              className="w-40 h-40 rounded-lg overflow-hidden shadow-lg mb-6 md:mb-0 md:mr-8"
             >
               <img
                 src={user.avatar_url || "/winter_soldier.gif"}
@@ -490,7 +490,7 @@ export default function UserProfile({
                   <div className="mb-4">
                     <label className="block mb-2">Reputation Change:</label>
                     <select
-                      className="w-full bg-gray-600 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full bg-gray-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={reputationChange || 0}
                       onChange={(e) =>
                         setReputationChange(parseInt(e.target.value))
@@ -512,7 +512,7 @@ export default function UserProfile({
                   <div className="mb-4">
                     <label className="block mb-2">Comment:</label>
                     <textarea
-                      className="w-full bg-gray-600 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full bg-gray-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={reputationComment}
                       onChange={(e) => setReputationComment(e.target.value)}
                       rows={3}
@@ -520,13 +520,13 @@ export default function UserProfile({
                   </div>
                   <div className="flex justify-end space-x-4">
                     <button
-                      className="bg-blue-600 text-white rounded-md px-6 py-2 hover:bg-blue-700 transition-colors duration-300"
+                      className="bg-blue-600 text-white rounded-lg px-6 py-2 hover:bg-blue-700 transition-colors duration-300"
                       onClick={handleReputationSubmit}
                     >
                       Submit
                     </button>
                     <button
-                      className="bg-red-600 text-white rounded-md px-6 py-2 hover:bg-red-700 transition-colors duration-300"
+                      className="bg-red-600 text-white rounded-lg px-6 py-2 hover:bg-red-700 transition-colors duration-300"
                       onClick={handleReputationDelete}
                     >
                       Delete
@@ -535,7 +535,7 @@ export default function UserProfile({
                 </div>
               )}
               <button
-                className="w-full bg-gray-700 text-blue-400 rounded-md px-6 py-3 hover:bg-gray-600 transition-colors duration-300"
+                className="w-full bg-gray-700 text-blue-400 rounded-lg px-6 py-3 hover:bg-gray-600 transition-colors duration-300"
                 onClick={() => setShowReputationPopup(false)}
               >
                 Close
