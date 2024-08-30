@@ -21,6 +21,9 @@ export default function UserProfile({
   const [reputationComment, setReputationComment] = useState("");
   const [recentThreads, setRecentThreads] = useState([]);
   const popupRef = useRef<HTMLDivElement>(null);
+  const [userReputations, setReputations] = useState(0);
+  const [userLikes, setUserLikes] = useState(0);
+  const [userThreads, setUserThreads] = useState(0);
 
   // TODO: Implement awards system API retrival
   const awards = [
@@ -95,6 +98,30 @@ export default function UserProfile({
 
     fetchRecentThreads();
   }, [user.id]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`/api/v1/users/${user.username}`);
+        if (res.ok) {
+          const data = await res.json();
+          setReputations(data.reputation);
+          setUserLikes(data.likes_received);
+          setUserThreads(data.threads_count);
+
+          console.log(userReputations);
+          console.log(userLikes);
+          console.log(userThreads);
+        } else {
+          console.error("Failed to fetch user data");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchData();
+  });
 
   const renderContentWithEmojisAndBBCode = (content: string) => {
     if (!content) {
@@ -259,7 +286,7 @@ export default function UserProfile({
                   <p
                     className={`text-2xl font-bold ${user.reputation >= 0 ? "text-green-500" : "text-red-500"}`}
                   >
-                    {user.reputation}
+                    {userReputations}
                   </p>
                   <p className="text-xs text-gray-400">Reputation</p>
                   <span>
@@ -273,7 +300,7 @@ export default function UserProfile({
                 </div>
                 <div className="text-center p-2 bg-gray-700 rounded-lg">
                   <p className="text-2xl font-bold text-green-500">
-                    {user.likes_received}
+                    {userLikes}
                   </p>
                   <p className="text-xs text-gray-400">Likes</p>
                 </div>
@@ -325,7 +352,7 @@ export default function UserProfile({
                 {[
                   {
                     label: "Threads",
-                    value: user.threads_count,
+                    value: userThreads,
                     link: `/users/${user.username}/threads`,
                   },
                   { label: "Posts", value: user.posts_count },
