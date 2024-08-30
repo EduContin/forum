@@ -39,7 +39,7 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
         const postIds = initialPosts.map((post) => post.id).join(",");
         try {
           const response = await fetch(
-            `/api/v1/likes?postIds=${postIds} ${session.user.id}`,
+            `/api/v1/likes?postIds=${postIds}&userId=${session.user.id}`,
           );
           if (response.ok) {
             const likedPosts = await response.json();
@@ -91,14 +91,19 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
         "<a href='$1' target='_blank' rel='noopener noreferrer'>$2</a>",
       )
       .replace(
-        /\[hidden\](.*?)\[\/hidden\]/g,
-        "<span class='hidden-content'>Like this post to see the content</span>",
-      )
-      .replace(
         /\[spoiler\](.*?)\[\/spoiler\]/g,
         "<span class='spoiler-content'>$1</span>",
       )
+      .replace(/\[hidden\](.*?)\[\/hidden\]/g, (match, content) => {
+        const firstPost = posts[0];
+        return firstPost.is_liked_by_user
+          ? "<span style='color:#ff0000'>" + content + "</span>"
+          : "<span class='hidden-content'>Like this post to see the content</span>";
+      })
       .replace(/\n/g, "<br>");
+
+    const firstPost = posts[0];
+    console.log(firstPost.is_liked_by_user);
 
     const parts = parsedContent.split(/(:[a-zA-Z0-9_+-]+:)/g);
 

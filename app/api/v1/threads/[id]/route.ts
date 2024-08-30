@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   try {
     let query = `
-      SELECT t.*, u.username, c.name AS category_name, 
+      SELECT t.*, u.username,  c.name AS category_name, 
              COUNT(p.id) AS post_count, 
              MAX(p.created_at) AS last_post_at
       FROM threads t

@@ -224,14 +224,14 @@ const Shoutbox = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="bg-gray-900 py-2 px-2 rounded-md"
+                className="bg-gray-900 py-2 px-2 rounded-lg"
               >
                 <div className="flex items-start">
                   <a href={`/users/${msg.username}`} className="flex-shrink-0">
                     <img
                       src={msg.avatar_url || "/winter_soldier.gif"}
                       alt="Profile"
-                      className="h-7 w-7 mr-2"
+                      className="h-7 w-7 mr-2 rounded-lg"
                       width={28}
                       height={28}
                     />
@@ -275,7 +275,7 @@ const Shoutbox = () => {
           value={inputMessage}
           onChange={handleInputChange}
           onKeyPress={handleKeyPress}
-          className="flex-grow p-2 rounded-l-md bg-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          className="flex-grow p-2 rounded-lg bg-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           placeholder={
             editingMessageId ? "Edit your message..." : "Type your message..."
           }
@@ -283,17 +283,17 @@ const Shoutbox = () => {
         />
         <button
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          className="p-1.5 pl-2 pr-2 ml-1 bg-gray-600 text-white rounded-md hover:bg-gray-500 focus:outline-none transition-colors"
+          className="p-1.5 pl-2 pr-2 ml-1 bg-gray-600 text-white rounded-lg hover:bg-gray-500 focus:outline-none transition-colors"
         >
           😀
         </button>
         {showEmojiPicker && (
-          <div className="absolute right-0 bottom-full mb-2 bg-gray-800 p-2 rounded-md shadow-lg">
+          <div className="absolute right-0 bottom-full mb-2 bg-gray-800 p-2 rounded-lg shadow-lg">
             {Object.keys(customEmojis).map((emoji) => (
               <button
                 key={emoji}
                 onClick={() => handleEmojiClick(emoji)}
-                className="m-1 p-1 hover:bg-gray-700 rounded"
+                className="m-1 p-1 hover:bg-gray-700 rounded-lg"
               >
                 <Image
                   src={customEmojis[emoji]}
@@ -313,7 +313,7 @@ const Shoutbox = () => {
       {editingMessageId && (
         <button
           onClick={handleCancelEdit}
-          className="mt-2 px-3 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none transition-colors text-xs"
+          className="mt-2 px-3 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none transition-colors text-xs"
         >
           Cancel
         </button>

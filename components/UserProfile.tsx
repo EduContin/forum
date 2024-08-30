@@ -97,6 +97,10 @@ export default function UserProfile({
   }, [user.id]);
 
   const renderContentWithEmojisAndBBCode = (content: string) => {
+    if (!content) {
+      return null;
+    }
+
     const parsedContent = content
       .replace(/\[b\](.*?)\[\/b\]/g, "<b>$1</b>")
       .replace(/\[i\](.*?)\[\/i\]/g, "<i>$1</i>")
