@@ -278,7 +278,7 @@ const CreateThreadForm: React.FC<CreateThreadFormProps> = ({ categoryId }) => {
           {title.length}/{MAX_TITLE_CHARACTERS} characters
         </div>
       </div>
-      <div className="mb-4">
+      <div className="relative mb-4">
         <label htmlFor="content" className="block mb-2">
           Content
         </label>
@@ -393,7 +393,7 @@ const CreateThreadForm: React.FC<CreateThreadFormProps> = ({ categoryId }) => {
                 ]);
               }
             }}
-            className="w-full px-3 py-2 bg-gray-700/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full px-3 py-2 pr-10 bg-gray-700/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             rows={5}
             required
           />
@@ -409,12 +409,12 @@ const CreateThreadForm: React.FC<CreateThreadFormProps> = ({ categoryId }) => {
           </button>
         </div>
         {showEmojiPicker && (
-          <div className="absolute mt-2 p-2 bg-gray-700 rounded-md z-10">
+          <div className="absolute top-0 right-2 mt-2 p-2 bg-gray-700 rounded-md z-10 max-h-40 overflow-y-auto">
             {Object.keys(customEmojis).map((emoji) => (
               <span
                 key={emoji}
                 onClick={() => handleEmojiClick(emoji)}
-                className="m-1 p-1 hover:bg-gray-600 rounded cursor-pointer"
+                className="inline-block m-1 p-1 hover:bg-gray-600 rounded cursor-pointer"
               >
                 <Image
                   src={customEmojis[emoji]}
