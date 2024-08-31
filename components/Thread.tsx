@@ -15,7 +15,26 @@ interface Post {
   avatar_url: string;
   likes_count: number;
   is_liked_by_user: boolean;
+  signature: string;
 }
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  created_at: string;
+  avatar_url: string;
+  bio: string | null;
+  user_group: string;
+  threads_count: number;
+  posts_count: number;
+  likes_received: number;
+  reputation: number;
+  vouches: number;
+  last_seen: string | null;
+  signature: string;
+}
+
 interface ThreadProps {
   thread: {
     id: number;
@@ -32,6 +51,8 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
   const [replyContent, setReplyContent] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [posts, setPosts] = useState(initialPosts);
+  const [userSignature, setUserSignature] = useState("");
+  const [users, setUsers] = useState<{ [key: string]: User }>({});
 
   useEffect(() => {
     const fetchLikes = async () => {
@@ -56,9 +77,114 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
       }
     };
 
+    const fetchUsers = async () => {
+      const usernames = new Set(posts.map((post) => post.username));
+      for (const username of usernames) {
+        try {
+          const response = await fetch(`/api/v1/users/${username}`);
+          if (response.ok) {
+            const user = await response.json();
+            setUsers((prevUsers) => ({ ...prevUsers, [username]: user }));
+          }
+        } catch (error) {
+          console.error(`Error fetching user ${username}:`, error);
+        }
+      }
+    };
+
     fetchLikes();
+    fetchUsers();
   }, [session, initialPosts]);
 
+  useEffect(() => {
+    const fetchSignature = async () => {
+      if (session?.user?.name) {
+        try {
+          const response = await fetch(`/api/v1/users/${session.user.name}`);
+          if (response.ok) {
+            const user = await response.json();
+            setUserSignature(user.signature);
+          }
+        } catch (error) {
+          console.error("Error fetching signature:", error);
+        }
+      }
+    };
+
+    fetchSignature();
+  });
+
+  const renderUserProfile = (username: string) => {
+    const user = users[username];
+    if (!user) return null;
+
+    return (
+      <div className="bg-gray-800 rounded-lg overflow-hidden max-w-xs mx-auto">
+        {/* Cover image and profile picture */}
+        <div className="relative">
+          <div className="h-24 bg-gradient-to-r from-blue-600 to-purple-700 flex items-end justify-center pb-2">
+            <h3 className="text-xl font-bold text-white mb-12">
+              {user.username}
+            </h3>
+          </div>
+          <img
+            src={user.avatar_url || `/winter_soldier.gif`}
+            alt="Profile Picture"
+            className="absolute left-1/2 transform -translate-x-1/2 -bottom-12 w-24 h-24 rounded-full border-4 border-gray-800"
+          />
+        </div>
+
+        <div className="pt-16 px-4 pb-6">
+          {/* Reputation and Likes */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="text-center p-3 bg-gray-700 rounded-lg">
+              <p
+                className={`text-2xl font-bold ${
+                  user.reputation >= 0 ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                {user.reputation}
+              </p>
+              <p className="text-xs text-gray-400">Reputation</p>
+            </div>
+            <div className="text-center p-3 bg-gray-700 rounded-lg">
+              <p className="text-2xl font-bold text-green-500">
+                {user.likes_received}
+              </p>
+              <p className="text-xs text-gray-400">Likes</p>
+            </div>
+          </div>
+
+          {/* User group */}
+          <p className="text-gray-300 font-bold text-sm mb-4 text-center">
+            {user.user_group}
+          </p>
+
+          {/* User details */}
+          <div className="text-xs text-gray-300 space-y-2">
+            <p>
+              <span className="font-semibold">POSTS:</span> {user.posts_count}
+            </p>
+            <p>
+              <span className="font-semibold">THREADS:</span>{" "}
+              {user.threads_count}
+            </p>
+            <p>
+              <span className="font-semibold">JOINED:</span>{" "}
+              {new Date(user.created_at).toLocaleDateString()}
+            </p>
+            <p>
+              <span className="font-semibold">VOUCHES:</span> {user.vouches}
+            </p>
+            <p>
+              <span className="font-semibold">CREDITS:</span>{" "}
+              {user.credits || 0}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
   const renderContentWithEmojisAndBBCode = (content: string) => {
     const parsedContent = content
       .replace(/\[b\](.*?)\[\/b\]/g, "<b>$1</b>")
@@ -209,46 +335,62 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
         </p>
         <div className="space-y-4">
           {posts.map((post) => (
-            <div key={post.id} className="bg-gray-700/50 rounded-lg p-4">
-              <div className="flex items-center mb-2">
-                <img
-                  src={post.avatar_url || `/winter_soldier.gif`}
-                  alt="Profile Picture"
-                  width={40}
-                  height={40}
-                  className="rounded-lg mr-2 h-14 w-14"
-                />
-                <a href={`/users/${thread.username}`} className="font-semibold">
-                  {post.username}
-                </a>
-                <span className="text-sm text-gray-400 ml-auto">
-                  {new Date(post.created_at).toLocaleString()}
-                </span>
+            <div key={post.id} className="flex">
+              <div className="w-1/4 pr-4">
+                {renderUserProfile(post.username)}
               </div>
-              <div className="whitespace-pre-wrap">
-                {renderContentWithEmojisAndBBCode(post.content)}
-              </div>
-              <div className="mt-2 flex items-center">
-                <button
-                  onClick={() => handleLike(post.id)}
-                  className={`flex items-center space-x-1 ${
-                    post.is_liked_by_user ? "text-blue-500" : "text-gray-400"
-                  } hover:text-blue-500 transition-colors`}
-                  disabled={!session || !session.user}
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                  </svg>
-                  <span>{post.likes_count}</span>
-                </button>
+              <div className="w-3/4">
+                <div className="bg-gray-700/50 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <a
+                      href={`/users/${post.username}`}
+                      className="font-semibold"
+                    >
+                      {post.username}
+                    </a>
+                    <span className="text-sm text-gray-400">
+                      {new Date(post.created_at).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="whitespace-pre-wrap">
+                    {renderContentWithEmojisAndBBCode(post.content)}
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    <button
+                      onClick={() => handleLike(post.id)}
+                      className={`flex items-center space-x-1 ${
+                        post.is_liked_by_user
+                          ? "text-blue-500"
+                          : "text-gray-400"
+                      } hover:text-blue-500 transition-colors`}
+                      disabled={!session || !session.user}
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+                      </svg>
+                      <span>{post.likes_count}</span>
+                    </button>
+                  </div>
+                </div>
+                {post.signature && (
+                  <div className="mt-2 bg-gray-900 rounded-lg p-2 text-sm">
+                    <p>{renderContentWithEmojisAndBBCode(post.signature)}</p>
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
+        {userSignature && (
+          <div className="mt-4 bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto">
+            <h3 className="text-lg font-semibold">User Signature:</h3>
+            <p>{renderContentWithEmojisAndBBCode(userSignature)}</p>
+          </div>
+        )}
         {session && session.user ? (
           <form onSubmit={handleReplySubmit} className="mt-4">
             <div className="relative">
