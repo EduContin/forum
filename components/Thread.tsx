@@ -124,7 +124,9 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
         <div className="relative">
           <div className="h-24 bg-gradient-to-r from-blue-600 to-purple-700 flex items-end justify-center pb-2">
             <h3 className="text-xl font-bold text-white mb-12">
-              {user.username}
+              <a href={`/users/${user.username}`} className="font-semibold">
+                {user.username}
+              </a>
             </h3>
           </div>
           <img
@@ -185,6 +187,7 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
       </div>
     );
   };
+
   const renderContentWithEmojisAndBBCode = (content: string) => {
     const parsedContent = content
       .replace(/\[b\](.*?)\[\/b\]/g, "<b>$1</b>")
@@ -227,9 +230,6 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
           : "<span class='hidden-content'>Like this post to see the content</span>";
       })
       .replace(/\n/g, "<br>");
-
-    const firstPost = posts[0];
-    console.log(firstPost.is_liked_by_user);
 
     const parts = parsedContent.split(/(:[a-zA-Z0-9_+-]+:)/g);
 
@@ -336,18 +336,10 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
         <div className="space-y-4">
           {posts.map((post) => (
             <div key={post.id} className="flex">
-              <div className="w-1/4 pr-4">
-                {renderUserProfile(post.username)}
-              </div>
-              <div className="w-3/4">
+              <div className=" pr-4">{renderUserProfile(post.username)}</div>
+              <div className="w-5/6">
                 <div className="bg-gray-700/50 rounded-lg p-4">
                   <div className="flex justify-between items-center mb-2">
-                    <a
-                      href={`/users/${post.username}`}
-                      className="font-semibold"
-                    >
-                      {post.username}
-                    </a>
                     <span className="text-sm text-gray-400">
                       {new Date(post.created_at).toLocaleString()}
                     </span>
@@ -376,21 +368,16 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
                     </button>
                   </div>
                 </div>
-                {post.signature && (
-                  <div className="mt-2 bg-gray-900 rounded-lg p-2 text-sm">
-                    <p>{renderContentWithEmojisAndBBCode(post.signature)}</p>
+                {userSignature && (
+                  <div className="mt-4 bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto">
+                    <h3 className="text-lg font-semibold">User Signature:</h3>
+                    <p>{renderContentWithEmojisAndBBCode(userSignature)}</p>
                   </div>
                 )}
               </div>
             </div>
           ))}
         </div>
-        {userSignature && (
-          <div className="mt-4 bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto">
-            <h3 className="text-lg font-semibold">User Signature:</h3>
-            <p>{renderContentWithEmojisAndBBCode(userSignature)}</p>
-          </div>
-        )}
         {session && session.user ? (
           <form onSubmit={handleReplySubmit} className="mt-4">
             <div className="relative">
