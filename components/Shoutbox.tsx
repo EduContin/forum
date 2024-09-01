@@ -208,7 +208,6 @@ const Shoutbox = () => {
 
   const handleEmojiClick = (emoji: string) => {
     setInputMessage((prevMessage) => prevMessage + emoji);
-    setShowEmojiPicker(false);
   };
 
   return (
@@ -287,26 +286,26 @@ const Shoutbox = () => {
         >
           😀
         </button>
-        {showEmojiPicker && (
-          <div className="absolute right-0 bottom-full mb-2 bg-gray-800 p-2 rounded-lg shadow-lg">
-            {Object.keys(customEmojis).map((emoji) => (
-              <button
-                key={emoji}
-                onClick={() => handleEmojiClick(emoji)}
-                className="m-1 p-1 hover:bg-gray-700 rounded-lg"
-              >
-                <Image
-                  src={customEmojis[emoji]}
-                  alt={emoji}
-                  className="w-6 h-6"
-                  width={0}
-                  height={0}
-                />
-              </button>
-            ))}
-          </div>
-        )}
       </div>
+      {showEmojiPicker && (
+        <div className="relative right-0 bottom-full mb-2 bg-gray-800 p-2 rounded-lg shadow-lg">
+          {Object.keys(customEmojis).map((emoji) => (
+            <button
+              key={emoji}
+              onClick={() => handleEmojiClick(emoji)}
+              className="m-1 p-1 hover:bg-gray-700 rounded-lg"
+            >
+              <Image
+                src={customEmojis[emoji]}
+                alt={emoji}
+                className="w-6 h-6"
+                width={0}
+                height={0}
+              />
+            </button>
+          ))}
+        </div>
+      )}
       {errorMessage && (
         <p className="text-red-500 mt-1 text-xs">{errorMessage}</p>
       )}

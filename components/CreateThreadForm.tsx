@@ -409,7 +409,7 @@ const CreateThreadForm: React.FC<CreateThreadFormProps> = ({ categoryId }) => {
           </button>
         </div>
         {showEmojiPicker && (
-          <div className="absolute top-0 right-2 mt-2 p-2 bg-gray-700 rounded-md z-10 max-h-40 overflow-y-auto">
+          <div className="relative ml-10 right-6 mt-2 p-2 bg-gray-700 rounded-md z-10">
             {Object.keys(customEmojis).map((emoji) => (
               <span
                 key={emoji}
@@ -430,7 +430,7 @@ const CreateThreadForm: React.FC<CreateThreadFormProps> = ({ categoryId }) => {
           <button
             type="button"
             onClick={() => setShowPreview(!showPreview)}
-            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="px-4 mt-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             {showPreview ? "Hide Preview" : "Show Preview"}
           </button>
