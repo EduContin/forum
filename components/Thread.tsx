@@ -20,6 +20,7 @@ interface Post {
 }
 
 interface User {
+  banned: any;
   id: number;
   username: string;
   email: string;
@@ -295,7 +296,10 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
         <div className="relative">
           <div className="h-24 bg-gradient-to-r from-blue-600 to-purple-700 flex items-end justify-center pb-2">
             <h3 className="text-xl font-bold text-white mb-12">
-              <a href={`/users/${user.username}`} className="font-semibold">
+              <a
+                href={`/users/${user.username}`}
+                className={`font-semibold ${user.banned ? "line-through text-gray-400" : ""}`}
+              >
                 {user.username}
               </a>
             </h3>
@@ -329,8 +333,10 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
           </div>
 
           {/* User group */}
-          <p className="text-gray-300 font-bold text-sm mb-4 text-center">
-            {user.user_group}
+          <p
+            className={`text-gray-300 font-bold text-sm mb-4 text-center ${user.banned ? "text-red-500" : ""}`}
+          >
+            {user.banned ? "Banned" : user.user_group}
           </p>
 
           {/* User details */}

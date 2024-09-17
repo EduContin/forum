@@ -1,4 +1,4 @@
-A private community
+A forum for Software Engineers
 
 ```bash
 npm run dev

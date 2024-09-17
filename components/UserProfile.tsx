@@ -108,10 +108,6 @@ export default function UserProfile({
           setReputations(data.reputation);
           setUserLikes(data.likes_received);
           setUserThreads(data.threads_count);
-
-          console.log(userReputations);
-          console.log(userLikes);
-          console.log(userThreads);
         } else {
           console.error("Failed to fetch user data");
         }
@@ -174,7 +170,7 @@ export default function UserProfile({
       const emojiUrl = customEmojis[part as keyof typeof customEmojis];
       if (emojiUrl) {
         return (
-          <Image
+          <img
             key={index}
             src={emojiUrl}
             alt={part}
@@ -264,8 +260,14 @@ export default function UserProfile({
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-center md:text-left"
             >
-              <h1 className="text-4xl font-bold mb-2">{user.username}</h1>
-              <p className="text-xl text-blue-200">{user.user_group}</p>
+              <h1
+                className={`text-4xl font-bold mb-2 ${user.banned ? "line-through text-gray-400" : ""}`}
+              >
+                {user.username}
+              </h1>
+              <p className="text-xl text-blue-200">
+                {user.banned ? "Banned" : user.user_group}
+              </p>
             </motion.div>
           </div>
         </div>
