@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react";
 import customEmojis from "@/models/custom-emojis";
 import SessionProviderClient from "./SessionProviderClient";
 import debounce from "lodash/debounce";
+import { useRouter } from "next/navigation";
+import { FaTrashAlt } from "react-icons/fa";
 
 interface Post {
   id: number;
@@ -17,6 +19,7 @@ interface Post {
   likes_count: number;
   is_liked_by_user: boolean;
   signature: string;
+  is_deleted: boolean;
 }
 
 interface User {
@@ -50,6 +53,7 @@ interface ThreadProps {
 
 const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
   const { data: session } = useSession();
+  const router = useRouter();
   const [replyContent, setReplyContent] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [posts, setPosts] = useState(initialPosts);
@@ -65,9 +69,81 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
   const [selectionRange, setSelectionRange] = useState<[number, number] | null>(
     null,
   );
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const MAX_CHARACTERS = 5000; // Set the maximum character limit
   const CHARACTERS_PER_LINE = 1000; // Set the number of characters per line
+
+  const handleDeletePost = async (postId: number) => {
+    if (!isAdmin) return;
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this post?",
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`/api/v1/posts?postId=${postId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        const deletedPost = await response.json();
+        setPosts((prevPosts) =>
+          prevPosts.map((post) =>
+            post.id === deletedPost.id ? { ...post, ...deletedPost } : post,
+          ),
+        );
+        alert("Post deleted successfully");
+      } else {
+        console.error("Failed to delete post");
+        alert("Failed to delete post. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("An error occurred while deleting the post. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    if (session?.user?.name) {
+      fetch(`/api/v1/users/${session.user.name}`)
+        .then((response) => response.json())
+        .then((user) => {
+          setIsAdmin(user.user_group === "Admin");
+        })
+        .catch((error) => console.error("Error fetching user data:", error));
+    }
+  }, [session]);
+
+  const handleDeleteThread = async () => {
+    if (!isAdmin) return;
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this entire thread?",
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`/api/v1/threads/${thread.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        alert("Thread deleted successfully");
+        router.push("/"); // Redirect to home page or thread list
+      } else {
+        console.error("Failed to delete thread");
+        alert("Failed to delete thread. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error deleting thread:", error);
+      alert("An error occurred while deleting the thread. Please try again.");
+    }
+  };
 
   const updateContent = useCallback(
     (newContent: string) => {
@@ -508,7 +584,17 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
   return (
     <SessionProviderClient session={session}>
       <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 mb-2">
-        <h2 className="text-2xl font-bold mb-4">{thread.title}</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">{thread.title}</h2>
+          {isAdmin && (
+            <button
+              onClick={handleDeleteThread}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
+            >
+              Delete Thread
+            </button>
+          )}
+        </div>
         <p className="text-sm text-gray-400 mb-4">
           Posted by
           <a href={`/users/${thread.username}`}> {thread.username} </a>
@@ -520,37 +606,54 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
             <div key={post.id} className="flex">
               <div className=" pr-4">{renderUserProfile(post.username)}</div>
               <div className="w-5/6">
-                <div className="bg-gray-700/50 rounded-lg p-4">
+                <div className={"rounded-lg p-4 bg-gray-700/50"}>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-gray-400">
                       {new Date(post.created_at).toLocaleString()}
                     </span>
+                    {isAdmin && !post.is_deleted && (
+                      <button
+                        onClick={() => handleDeletePost(post.id)}
+                        className="px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      >
+                        Delete Post
+                      </button>
+                    )}
                   </div>
                   <div className="whitespace-pre-wrap">
-                    {renderContentWithEmojisAndBBCode(post.content)}
+                    {post.is_deleted ? (
+                      <div className="flex items-center space-x-2 text-gray-500 italic">
+                        <FaTrashAlt className="text-red-500" />
+                        <span>This content was deleted by a moderator</span>
+                      </div>
+                    ) : (
+                      renderContentWithEmojisAndBBCode(post.content)
+                    )}
                   </div>
-                  <div className="mt-2 flex items-center">
-                    <button
-                      onClick={() => handleLike(post.id)}
-                      className={`flex items-center space-x-1 ${
-                        post.is_liked_by_user
-                          ? "text-blue-500"
-                          : "text-gray-400"
-                      } hover:text-blue-500 transition-colors`}
-                      disabled={!session || !session.user}
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
+                  {!post.is_deleted && (
+                    <div className="mt-2 flex items-center">
+                      <button
+                        onClick={() => handleLike(post.id)}
+                        className={`flex items-center space-x-1 ${
+                          post.is_liked_by_user
+                            ? "text-blue-500"
+                            : "text-gray-400"
+                        } hover:text-blue-500 transition-colors`}
+                        disabled={!session || !session.user}
                       >
-                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                      </svg>
-                      <span>{post.likes_count}</span>
-                    </button>
-                  </div>
+                        <svg
+                          className="w-5 h-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+                        </svg>
+                        <span>{post.likes_count}</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {userSignature && (
+                {!post.is_deleted && userSignature && (
                   <div className="mt-4 bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto">
                     <h3 className="text-lg font-semibold">User Signature:</h3>
                     <p>{renderContentWithEmojisAndBBCode(userSignature)}</p>

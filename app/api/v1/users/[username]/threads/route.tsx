@@ -42,7 +42,8 @@ export async function GET(
           COUNT(p.id) AS post_count,
           MAX(p.created_at) AS last_post_at,
           t.view_count,
-          t.status
+          t.status,
+          (SELECT COUNT(*) FROM likes WHERE post_id = (SELECT id FROM posts WHERE thread_id = t.id ORDER BY created_at ASC LIMIT 1)) AS first_post_likes
         FROM 
           threads t
           JOIN users u ON t.user_id = u.id
@@ -68,6 +69,7 @@ export async function GET(
       last_post_at: thread.last_post_at,
       view_count: thread.view_count,
       status: thread.status,
+      first_post_likes: parseInt(thread.first_post_likes),
     }));
 
     return NextResponse.json({

@@ -1,7 +1,9 @@
 import React from "react";
 import Link from "next/link";
 import { slugify } from "@/models/slugify";
-import { FaComments, FaUser, FaFolder, FaClock } from "react-icons/fa";
+import { FaComments, FaUser, FaFolder, FaClock, FaHeart } from "react-icons/fa";
+
+// components/ThreadList.tsx
 
 interface Thread {
   id: number;
@@ -10,6 +12,7 @@ interface Thread {
   category_name: string;
   post_count: number;
   last_post_at: string;
+  first_post_likes: number;
 }
 
 interface ThreadListProps {
@@ -67,6 +70,7 @@ const ThreadList: React.FC<ThreadListProps> = ({ threads }) => {
               <th className="py-3 px-4 bg-gray-700/80">Author</th>
               <th className="py-3 px-4 bg-gray-700/80">Category</th>
               <th className="py-3 px-4 bg-gray-700/80">Replies</th>
+              <th className="py-3 px-4 bg-gray-700/80">Likes</th>
               <th className="py-3 px-4 bg-gray-700/80 rounded-tr-md">
                 Last Activity
               </th>
@@ -103,6 +107,12 @@ const ThreadList: React.FC<ThreadListProps> = ({ threads }) => {
                 </td>
                 <td className="py-3 px-4 border-b border-gray-600/50 text-gray-300">
                   {thread.post_count - 1}
+                </td>
+                <td className="py-3 px-4 border-b border-gray-600/50 text-gray-300">
+                  <div className="flex items-center">
+                    <FaHeart className="mr-2 text-red-400 flex-shrink-0" />
+                    {thread.first_post_likes}
+                  </div>
                 </td>
                 <td className="py-3 px-4 border-b border-gray-600/50 text-gray-300">
                   <div className="flex items-center">

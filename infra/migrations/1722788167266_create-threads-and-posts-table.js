@@ -59,6 +59,7 @@ exports.up = (pgm) => {
       default: pgm.func("current_timestamp"),
     },
     likes_count: { type: "integer", notNull: true, default: 0 },
+    is_deleted: { type: "boolean", default: false },
   });
 };
 
