@@ -1,12 +1,23 @@
+// app/users/[username]/threads/page.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
 import ThreadList from "@/components/ThreadList";
 
+interface Thread {
+  id: number;
+  title: string;
+  username: string;
+  category_name: string;
+  post_count: number;
+  last_post_at: string;
+  first_post_likes: number;
+}
+
 const UserThreads: React.FC = () => {
   const userUsername =
     typeof window !== "undefined" ? window.location.pathname.split("/")[2] : "";
-  const [threads, setThreads] = useState([]);
+  const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -49,7 +60,7 @@ const UserThreads: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-gray-100">
-        {userUsername}'s Threads
+        {userUsername}&apos;s Threads
       </h1>
       <ThreadList threads={threads} />
       <div className="mt-6 flex justify-center">
