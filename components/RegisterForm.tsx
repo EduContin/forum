@@ -1,3 +1,5 @@
+// components/RegisterForm.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -20,6 +22,7 @@ export default function RegisterForm() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [invoiceUrl, setInvoiceUrl] = useState<string | null>(null);
   const router = useRouter();
 
   const validateForm = () => {
@@ -46,33 +49,39 @@ export default function RegisterForm() {
     return true;
   };
 
+  const createInvoice = async () => {
+    try {
+      const response = await fetch("/api/v1/create-invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          username,
+          password,
+          price_amount: 5, // The registration fee
+          price_currency: "usd", // Or whatever currency you're using
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setInvoiceUrl(data.invoice_url);
+      } else {
+        throw new Error("Failed to create invoice");
+      }
+    } catch (err) {
+      console.error("Invoice creation error:", err);
+      setError("Failed to create invoice. Please try again.");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
       return;
     }
-    try {
-      const response = await fetch("/api/v1/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: username.trim(),
-          email: email.trim(),
-          password: password.trim(),
-        }),
-      });
 
-      if (response.ok) {
-        setShowSuccessMessage(true);
-        router.push("/login");
-      } else {
-        const data = await response.json();
-        setError(data.message || "Registration failed");
-      }
-    } catch (err) {
-      console.error("Registration error:", err);
-      setError("An error occurred. Please try again.");
-    }
+    await createInvoice();
   };
 
   return (
@@ -133,8 +142,23 @@ export default function RegisterForm() {
             color="primary"
             className="w-full mt-4"
           >
-            Register
+            Register and Pay $5
           </Button>
+
+          {invoiceUrl && (
+            <div className="mt-4">
+              <p>Please complete your payment by clicking the link below:</p>
+              <a
+                href={invoiceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline"
+              >
+                Complete Payment
+              </a>
+            </div>
+          )}
+
           <p className="mt-4">
             Already have an account?{" "}
             <Link href="/login" legacyBehavior>
