@@ -3,7 +3,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import React from "react";
 import {
   Alert,
@@ -65,27 +64,30 @@ export default function RegisterForm() {
     return true;
   };
 
-  const createInvoice = async () => {
+  const createPayment = async () => {
     try {
       setIsLoading(true);
       const response = await fetch("/api/v1/create-invoice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          price_amount: 8,
-          pay_currency: "XMR",
+          pay_currency: "USD",
+          price_amount: 0.5,
+          username,
+          email,
+          password,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        window.location.href = data.invoice_url;
+        window.location.href = data.payment_url;
       } else {
-        throw new Error("Failed to create invoice");
+        throw new Error("Failed to create payment");
       }
     } catch (err) {
-      console.error("Invoice creation error:", err);
-      setError("Failed to create invoice. Please try again.");
+      console.error("Payment creation error:", err);
+      setError("Failed to create payment. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -94,14 +96,14 @@ export default function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      await createInvoice();
+      await createPayment();
     }
   };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
       <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        <h1 className="text-4xl font-bold mb-8">Registration Form</h1>
+        <h1 className="text-4xl font-bold mb-8">Registration</h1>
         <form onSubmit={handleSubmit} className="w-full max-w-md">
           {error && (
             <Alert severity="error" className="mb-4">

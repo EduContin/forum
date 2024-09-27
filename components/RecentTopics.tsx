@@ -13,7 +13,7 @@ interface Thread {
 }
 
 async function getLatestThreads() {
-  const apiUrl = "http://localhost:3000";
+  const apiUrl = process.env.NEXT_PUBLIC_APP_URL;
   const response = await fetch(`${apiUrl}/api/v1/threads?page=1&pageSize=10`, {
     cache: "no-store",
   });

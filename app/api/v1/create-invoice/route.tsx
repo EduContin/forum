@@ -1,59 +1,60 @@
-// app/api/v1/create-invoice/route.ts
-
+import { storeUserDetails } from "@/lib/user";
 import { NextResponse } from "next/server";
 
-const API_KEY = process.env.NOWPAYMENTS_API_KEY;
-const API_URL = "https://api.nowpayments.io/v1/invoice";
+const API_KEY = process.env.HOODPAY_API_KEY;
+const BUSINESS_ID = process.env.HOODPAY_BUSINESS_ID;
+const API_URL = "https://api.hoodpay.io/v1/businesses";
 
 export async function POST(request: Request) {
   try {
-    const { email, username, password, price_amount, pay_currency } =
-      await request.json();
+    const { price_amount, username, email, password } = await request.json();
 
-    if (!API_KEY) {
-      throw new Error("API key is not defined");
+    if (!API_KEY || !BUSINESS_ID) {
+      throw new Error("API key or Business ID is not defined");
     }
 
-    const invoiceData = {
-      price_amount,
-      pay_currency,
-      payout_currency: "xmr",
-      price_currency: "usd",
-      order_id: Date.now().toString(),
-      order_description: "Forum registration fee",
-      ipn_callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/v1/nowpayments-webhook`,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/registration-success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/registration-cancelled`,
+    const processToken = Date.now().toString();
+
+    const paymentData = {
+      currency: "USD",
+      amount: price_amount,
+      metadata: {
+        processToken: processToken,
+      },
+      notifyUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/v1/hoodpay-webhook`,
     };
 
-    const response = await fetch(API_URL, {
+    const response = await fetch(`${API_URL}/${BUSINESS_ID}/payments`, {
       method: "POST",
       headers: {
-        "x-api-key": API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(invoiceData),
+      body: JSON.stringify(paymentData),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("NOWPayments API error:", errorData);
+      console.error("HOODPAY API error:", errorData);
       throw new Error(
-        `NOWPayments API error: ${response.status} ${response.statusText}`,
+        `HOODPAY API error: ${response.status} ${response.statusText}`,
       );
     }
 
-    const invoice = await response.json();
-    console.log("Invoice created successfully:", invoice);
+    const payment = await response.json();
+    console.log("Payment created successfully:", payment);
 
-    // Here you would typically store user details securely
-    // await storeUserDetails(invoiceData.order_id, { username, email, password });
+    // Store pending user data
+    storeUserDetails(processToken, { username, email, password });
 
-    return NextResponse.json(invoice);
+    return NextResponse.json({
+      payment_url: payment.data.url,
+      payment_id: payment.data.id,
+    });
   } catch (error) {
-    console.error("Invoice creation error:", error);
+    console.error("Payment creation error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create invoice" },
+      { error: (error as Error).message || "Failed to create payment" },
       { status: 500 },
     );
   }

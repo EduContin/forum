@@ -24,6 +24,8 @@ export async function storeUserDetails(
   orderId: string,
   userDetails: { username: string; email: string; password: string },
 ) {
+  console.log("Storing user details:", userDetails, "from order ID:", orderId);
+  const hashedPassword = await bcrypt.hash(userDetails.password, 10);
   try {
     await database.query({
       text: "INSERT INTO pending_users (order_id, username, email, password) VALUES ($1, $2, $3, $4)",
@@ -31,7 +33,7 @@ export async function storeUserDetails(
         orderId,
         userDetails.username,
         userDetails.email,
-        userDetails.password,
+        hashedPassword,
       ],
     });
     return true;
@@ -47,10 +49,9 @@ export async function createUser(userDetails: {
   password: string;
 }) {
   try {
-    const hashedPassword = await bcrypt.hash(userDetails.password, 10);
     await database.query({
       text: "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
-      values: [userDetails.username, userDetails.email, hashedPassword],
+      values: [userDetails.username, userDetails.email, userDetails.password],
     });
     return true;
   } catch (error) {
