@@ -1,64 +1,48 @@
-// app/api/v1/nowpayments-webhook/route.ts
+// pages/api/v1/nowpayments-webhook.ts
 
-import { NextResponse } from "next/server";
+import { NextApiRequest, NextApiResponse } from "next";
 import crypto from "crypto";
 import {
-  getUserDetailsByOrderId,
   createUser,
   deleteUserDetails,
+  getUserDetailsByOrderId,
 } from "@/lib/user";
 
 const IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET;
 
-export async function POST(request: Request) {
-  const body = await request.text();
-  const signature = request.headers.get("x-nowpayments-sig");
-
-  if (!signature) {
-    return NextResponse.json(
-      { error: "No signature provided" },
-      { status: 400 },
-    );
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  if (!IPN_SECRET) {
-    console.error("IPN_SECRET is not defined");
-    return NextResponse.json(
-      { error: "Server configuration error" },
-      { status: 500 },
-    );
-  }
+  const signature = req.headers["x-nowpayments-sig"];
+  const payload = req.body;
 
-  const hmac = crypto.createHmac("sha512", IPN_SECRET);
-  const digest = hmac.update(body).digest("hex");
+  // Verify signature
+  const hmac = crypto.createHmac("sha512", IPN_SECRET as string);
+  const digest = hmac.update(JSON.stringify(payload)).digest("hex");
 
   if (signature !== digest) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    return res.status(400).json({ error: "Invalid signature" });
   }
-
-  const payload = JSON.parse(body);
 
   if (payload.payment_status === "finished") {
     const { order_id } = payload;
 
-    // Retrieve user details
+    // Retrieve user details (implement this function)
     const userDetails = await getUserDetailsByOrderId(order_id);
 
     if (userDetails) {
-      // Create the user
-      const success = await createUser(userDetails);
+      // Create the user (implement this function)
+      await createUser(userDetails);
 
-      if (success) {
-        // Delete temporary user details
-        await deleteUserDetails(order_id);
-        console.log(`User created successfully for order ${order_id}`);
-      } else {
-        console.error(`Failed to create user for order ${order_id}`);
-      }
-    } else {
-      console.error(`User details not found for order ${order_id}`);
+      // Delete temporary user details (implement this function)
+      await deleteUserDetails(order_id);
     }
   }
 
-  return NextResponse.json({ status: "ok" });
+  res.status(200).json({ status: "ok" });
 }
