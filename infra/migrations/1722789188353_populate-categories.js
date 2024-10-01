@@ -6,7 +6,7 @@ exports.up = async (pgm) => {
     INSERT INTO sections (name, description) VALUES
     ('Main', 'General forum sections'),
     ('Cracking', 'Cracking related sections'),
-    ('Hacking & Exploits', 'Hacking and exploits related sections'),
+    ('Hacking and Exploits', 'Hacking and exploits related sections'),
     ('Leaks', 'Various leaked content'),
     ('Money', 'Money making methods and discussions'),
     ('Coding', 'Coding related discussions and resources'),
@@ -22,9 +22,9 @@ exports.up = async (pgm) => {
   const categoriesQuery = `
     INSERT INTO categories (section_id, parent_id, name, description, is_subfolder) VALUES
     (${getSectionId("Main")}, NULL, 'Announcements', 'Forum announcements', false),
-    (${getSectionId("Main")}, NULL, 'Feedback & Suggestions', 'Provide feedback and suggestions', false),
+    (${getSectionId("Main")}, NULL, 'Feedback and Suggestions', 'Provide feedback and suggestions', false),
     (${getSectionId("Main")}, NULL, 'Lounge', 'General discussion area', false),
-    (${getSectionId("Main")}, NULL, 'Achievements & Flex', 'Share your achievements', false),
+    (${getSectionId("Main")}, NULL, 'Achievements and Flex', 'Share your achievements', false),
     (${getSectionId("Main")}, NULL, 'World News', 'Discuss world events', false),
     (${getSectionId("Main")}, NULL, 'Giveaways', 'Forum giveaways', false),
     (${getSectionId("Main")}, NULL, 'International Lounge', 'Discussions in various languages', false),
@@ -34,9 +34,9 @@ exports.up = async (pgm) => {
     (${getSectionId("Cracking")}, NULL, 'Cracking Configs', 'Configuration files for cracking', false),
     (${getSectionId("Cracking")}, NULL, 'Combolists', 'Combination lists for cracking', false),
     (${getSectionId("Cracking")}, NULL, 'Proxylists', 'Proxy lists for cracking', false),
-    (${getSectionId("Hacking & Exploits")}, NULL, 'Hacking Lounge', 'General hacking discussions', false),
-    (${getSectionId("Hacking & Exploits")}, NULL, 'Hacking Tools', 'Tools for hacking', false),
-    (${getSectionId("Hacking & Exploits")}, NULL, 'Hacking Tutorials', 'Tutorials on hacking', false),
+    (${getSectionId("Hacking and Exploits")}, NULL, 'Hacking Lounge', 'General hacking discussions', false),
+    (${getSectionId("Hacking and Exploits")}, NULL, 'Hacking Tools', 'Tools for hacking', false),
+    (${getSectionId("Hacking and Exploits")}, NULL, 'Hacking Tutorials', 'Tutorials on hacking', false),
     (${getSectionId("Leaks")}, NULL, 'Tutorials, Guides, Courses, etc.', 'Leaked educational content', false),
     (${getSectionId("Leaks")}, NULL, 'Cracked Programs', 'Leaked software', false),
     (${getSectionId("Leaks")}, NULL, 'Accounts', 'Leaked account information', false),
@@ -70,9 +70,9 @@ exports.up = async (pgm) => {
     (${getSectionId("Main")}, ${getCategoryId("International Lounge")}, 'Russian', 'Russian language discussions', true),
     (${getSectionId("Main")}, ${getCategoryId("International Lounge")}, 'Spanish', 'Spanish language discussions', true),
     (${getSectionId("Main")}, ${getCategoryId("International Lounge")}, 'Indian', 'Indian language discussions', true),
-    (${getSectionId("Main")}, ${getCategoryId("International Lounge")}, 'Italiano', 'Italian language discussions', true),
-    (${getSectionId("Main")}, ${getCategoryId("International Lounge")}, 'Français', 'French language discussions', true),
-    (${getSectionId("Main")}, ${getCategoryId("International Lounge")}, 'Português', 'Portuguese language discussions', true),
+    (${getSectionId("Main")}, ${getCategoryId("International Lounge")}, 'Italian', 'Italian language discussions', true),
+    (${getSectionId("Main")}, ${getCategoryId("International Lounge")}, 'French', 'French language discussions', true),
+    (${getSectionId("Main")}, ${getCategoryId("International Lounge")}, 'Portuguese', 'Portuguese language discussions', true),
     (${getSectionId("Money")}, ${getCategoryId("Social Engineering")}, 'E-whoring', 'E-whoring techniques and discussions', true),
     (${getSectionId("Money")}, ${getCategoryId("Social Engineering")}, 'Tutorials', 'Social engineering tutorials', true),
     (${getSectionId("Money")}, ${getCategoryId("Social Engineering")}, 'Resources', 'Social engineering resources', true),
@@ -108,11 +108,12 @@ exports.up = async (pgm) => {
   // Helper function to find tag id by name
   const getTagId = (name) => tags.rows.find((t) => t.name === name).id;
 
+  // TODO: Make tags filtering for thread plus appear as prefix in thread title
   // Associate tags with categories
   const categoryTagsQuery = `
     INSERT INTO category_tags (category_id, tag_id) VALUES
-    (${getCategoryId("Feedback & Suggestions")}, ${getTagId("Accepted")}),
-    (${getCategoryId("Feedback & Suggestions")}, ${getTagId("Denied")}),
+    (${getCategoryId("Feedback and Suggestions")}, ${getTagId("Accepted")}),
+    (${getCategoryId("Feedback and Suggestions")}, ${getTagId("Denied")}),
     (${getCategoryId("Hacking Tutorials")}, ${getTagId("Web")}),
     (${getCategoryId("Hacking Tutorials")}, ${getTagId("Network")}),
     (${getCategoryId("Hacking Tutorials")}, ${getTagId("Botnet")}),

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import customEmojis from "@/models/custom-emojis";
 
+const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 type UserProfileProps = {
   user: any;
   reputations: any[];
@@ -189,7 +191,7 @@ export default function UserProfile({
   const handleReputationSubmit = async () => {
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/users/${encodeURIComponent(
+        `${apiUrl}/api/v1/users/${encodeURIComponent(
           user.username,
         )}/reputation`,
         {
@@ -217,7 +219,7 @@ export default function UserProfile({
   const handleReputationDelete = async () => {
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/users/${encodeURIComponent(
+        `${apiUrl}/api/v1/users/${encodeURIComponent(
           user.username,
         )}/reputation`,
         {

@@ -4,6 +4,9 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import database from "@/infra/database";
 import bcrypt from "bcrypt";
 
+const MAX_SIGNATURE_LENGTH = 500;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+
 export async function PUT(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -55,6 +58,9 @@ async function updateEmail(userId: string, email: string) {
 }
 
 async function updateSignature(userId: string, signature: string) {
+  if (signature.length > MAX_SIGNATURE_LENGTH) {
+    throw new Error("Signature exceeds maximum length");
+  }
   await database.query({
     text: "UPDATE users SET signature = $1 WHERE id = $2",
     values: [signature, userId],
@@ -62,10 +68,19 @@ async function updateSignature(userId: string, signature: string) {
 }
 
 async function updateProfilePicture(userId: string, avatarUrl: string) {
-  await database.query({
-    text: "UPDATE users SET avatar_url = $1 WHERE id = $2",
-    values: [avatarUrl, userId],
-  });
+  try {
+    const response = await fetch(avatarUrl);
+    const contentLength = response.headers.get("content-length");
+    if (contentLength && parseInt(contentLength) > MAX_IMAGE_SIZE) {
+      throw new Error("Profile picture size exceeds the maximum allowed (2MB)");
+    }
+    await database.query({
+      text: "UPDATE users SET avatar_url = $1 WHERE id = $2",
+      values: [avatarUrl, userId],
+    });
+  } catch (error) {
+    throw new Error("Invalid image URL or unable to fetch the image");
+  }
 }
 
 async function updatePassword(

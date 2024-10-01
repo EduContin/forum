@@ -4,6 +4,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { slugify } from "@/models/slugify";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Category {
   id: number;
@@ -22,6 +23,7 @@ interface Section {
 const ForumSummary: React.FC = () => {
   const [sections, setSections] = useState<Section[]>([]);
   const [activeSection, setActiveSection] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -38,6 +40,8 @@ const ForumSummary: React.FC = () => {
         }
       } catch (error) {
         console.error("Error fetching forum structure:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -45,64 +49,86 @@ const ForumSummary: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-gray-800 text-white">
-      <nav className="container mx-auto px-4 py-2">
-        <ul className="flex space-x-4 overflow-x-auto">
-          {sections.map((section) => (
-            <li key={section.id}>
-              <button
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  activeSection === section.name
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
-                onClick={() => setActiveSection(section.name)}
-              >
-                {section.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <div className="container mx-auto px-4 py-6">
-        {sections.map((section) => (
-          <div
-            key={section.id}
-            className={activeSection === section.name ? "block" : "hidden"}
-          >
-            <h2 className="text-2xl font-bold mb-4">{section.name}</h2>
-            <div className="bg-gray-900 rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-800 text-left">
-                    <th className="py-3 px-4">Category</th>
-                    <th className="py-3 px-4">Threads</th>
-                    <th className="py-3 px-4">Posts</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {section.categories.map((category) => (
-                    <tr key={category.id} className="border-b border-gray-800">
-                      <td className="py-4 px-4">
-                        <Link href={`/category/${slugify(category.name)}`}>
-                          <span className="font-medium text-blue-400 hover:text-blue-300">
-                            {category.name}
-                          </span>
-                        </Link>
-                        <p className="text-sm text-gray-400 mt-1">
-                          {category.description}
-                        </p>
-                      </td>
-                      <td className="py-4 px-4">{category.thread_count}</td>
-                      <td className="py-4 px-4">{category.post_count}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+    <div className="bg-gray-800/90 p-6 rounded-lg shadow-lg mb-8">
+      {isLoading ? (
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <>
+          <nav className="mb-6">
+            <div className="bg-gray-900/80 rounded-lg p-2">
+              <ul className="flex flex-wrap gap-2">
+                {sections.map((section) => (
+                  <li key={section.id}>
+                    <button
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ease-in-out ${
+                        activeSection === section.name
+                          ? "bg-blue-600 text-white shadow-lg transform scale-105"
+                          : "text-slate-300 hover:bg-gray-700/70 hover:text-white"
+                      }`}
+                      onClick={() => setActiveSection(section.name)}
+                      aria-pressed={activeSection === section.name}
+                    >
+                      {section.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
-        ))}
-      </div>
+          </nav>
+          <AnimatePresence mode="wait">
+            {sections.map((section) => (
+              <motion.div
+                key={section.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className={activeSection === section.name ? "block" : "hidden"}
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-left text-gray-400 border-b border-gray-700">
+                        <th className="py-3 px-4">Category</th>
+                        <th className="py-3 px-4 text-center">Threads</th>
+                        <th className="py-3 px-4 text-center">Posts</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {section.categories.map((category) => (
+                        <tr
+                          key={category.id}
+                          className="border-b border-gray-700 last:border-b-0 hover:bg-gray-700/50 transition-colors"
+                        >
+                          <td className="py-4 px-4">
+                            <Link
+                              href={`/category/${slugify(category.name)}`}
+                              className="font-semibold text-white hover:text-blue-300 transition-colors"
+                            >
+                              {category.name}
+                            </Link>
+                            <p className="text-sm text-gray-400 mt-1">
+                              {category.description}
+                            </p>
+                          </td>
+                          <td className="py-4 px-4 text-center text-gray-300">
+                            {category.thread_count}
+                          </td>
+                          <td className="py-4 px-4 text-center text-gray-300">
+                            {category.post_count}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </>
+      )}
     </div>
   );
 };

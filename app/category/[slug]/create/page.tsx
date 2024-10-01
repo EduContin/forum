@@ -2,7 +2,7 @@ import React from "react";
 import CreateThreadForm from "@/components/CreateThreadForm";
 
 async function getCategory(categorySlug: string) {
-  const apiUrl = "http://localhost:3000";
+  const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const response = await fetch(`${apiUrl}/api/v1/categories/${categorySlug}`, {
     cache: "no-store",
   });

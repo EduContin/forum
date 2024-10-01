@@ -36,7 +36,10 @@ const Shoutbox = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:4000", { withCredentials: true });
+    const newSocket = io(
+      process.env.NEXT_PUBLIC_SHOUTBOX_SOCKET || "http://localhost:4000",
+      { withCredentials: true },
+    );
     setSocket(newSocket);
 
     newSocket.on("message", (message: Message) => {
@@ -94,7 +97,7 @@ const Shoutbox = () => {
   const fetchUserAvatar = async (username: string): Promise<string> => {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${username}`,
+        `${process.env.NEXT_PUBLIC_APP_URL}/api/v1/users/${username}`,
       );
       const userData: User = await response.json();
       return userData.avatar_url;
@@ -301,6 +304,7 @@ const Shoutbox = () => {
                 className="w-6 h-6"
                 width={0}
                 height={0}
+                unoptimized
               />
             </button>
           ))}

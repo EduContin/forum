@@ -4,9 +4,11 @@ import { getServerSession } from "next-auth/next";
 import UserProfile from "@/components/UserProfile";
 import BanUserButtonWrapper from "@/components/BanUserButtonWrapper";
 
+const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 async function fetchUserProfile(username: string) {
   const res = await fetch(
-    `http://localhost:3000/api/v1/users/${encodeURIComponent(username)}`,
+    `${apiUrl}/api/v1/users/${encodeURIComponent(username)}`,
   );
 
   if (!res.ok) {
@@ -18,7 +20,7 @@ async function fetchUserProfile(username: string) {
 
 async function fetchUserReputations(username: string) {
   const res = await fetch(
-    `http://localhost:3000/api/v1/users/${encodeURIComponent(username)}/reputations`,
+    `${apiUrl}/api/v1/users/${encodeURIComponent(username)}/reputations`,
   );
 
   if (!res.ok) {
@@ -38,9 +40,7 @@ export default async function UserProfilePage({
   const session = await getServerSession();
   const currentUser = session?.user?.name;
 
-  const currentUserRes = await fetch(
-    `http://localhost:3000/api/v1/users/${currentUser}`,
-  );
+  const currentUserRes = await fetch(`${apiUrl}/api/v1/users/${currentUser}`);
   if (!currentUserRes.ok) {
     throw new Error("Failed to fetch current user");
   }

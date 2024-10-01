@@ -76,6 +76,12 @@ exports.up = async (pgm) => {
     VALUES ('admin', 'admin@example.com', '${hashedPassword}', 'Admin', current_timestamp);
   `);
 
+  // Insert a regular user with hashed password
+  pgm.sql(`
+    INSERT INTO users (username, email, password, user_group, created_at)
+    VALUES ('Test', 'test@example.com', '${hashedPassword}', 'Member', current_timestamp);
+  `);
+
   // Insert an banned user with hashed password
   pgm.sql(`
     INSERT INTO users (username, email, password, user_group, created_at, banned)

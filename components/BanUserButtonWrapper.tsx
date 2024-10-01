@@ -13,7 +13,7 @@ const BanUserButtonWrapper: React.FC<BanUserButtonWrapperProps> = async ({
   const currentUser = session?.user?.name;
 
   const response = await fetch(
-    `http://localhost:3000/api/v1/users/${currentUser}`,
+    `${process.env.NEXT_PUBLIC_APP_URL}/api/v1/users/${currentUser}`,
     { cache: "no-store" },
   );
   const data = await response.json();

@@ -36,7 +36,7 @@ const Navbar: React.FC = () => {
       if (session?.user?.name) {
         try {
           const response = await fetch(
-            `http://localhost:3000/api/v1/users/${session.user.name}`,
+            `${process.env.NEXT_PUBLIC_APP_URL}/api/v1/users/${session.user.name}`,
           );
           const userData = await response.json();
           setAvatarUrl(userData.avatar_url);

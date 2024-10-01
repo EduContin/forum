@@ -10,7 +10,7 @@ export async function POST(
   const session = await getServerSession(authOptions);
 
   const response = await fetch(
-    `http://localhost:3000/api/v1/users/${session?.user?.name}`,
+    `${process.env.NEXT_PUBLIC_APP_URL}/api/v1/users/${session?.user?.name}`,
     { cache: "no-store" },
   );
   const data = await response.json();

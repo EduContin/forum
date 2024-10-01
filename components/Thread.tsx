@@ -383,7 +383,7 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
           <img
             src={user.avatar_url || `/winter_soldier.gif`}
             alt="Profile Picture"
-            className="absolute left-1/2 transform -translate-x-1/2 -bottom-12 w-24 h-24 rounded-full border-4 border-gray-800"
+            className="absolute left-1/2 transform -translate-x-1/2 -bottom-12 w-24 h-24 rounded-full border-4 border-gray-800 object-cover"
           />
         </div>
 
@@ -507,8 +507,21 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
   };
 
   const handleEmojiClick = (emoji: string) => {
-    setContent((prevContent) => prevContent + emoji);
-    setShowEmojiPicker(false);
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newContent =
+        content.substring(0, start) + emoji + content.substring(end);
+      setContent(newContent);
+      setShowEmojiPicker(false);
+
+      // Set the cursor position after the inserted emoji
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+      }, 0);
+    }
   };
 
   const handleFontSizeChange = (size: string) => {
@@ -606,7 +619,7 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
             <div key={post.id} className="flex">
               <div className=" pr-4">{renderUserProfile(post.username)}</div>
               <div className="w-5/6">
-                <div className={"rounded-lg p-4 bg-gray-700/50"}>
+                <div className="rounded-lg p-4 bg-gray-700/50 overflow-hidden">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-gray-400">
                       {new Date(post.created_at).toLocaleString()}
@@ -620,7 +633,7 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
                       </button>
                     )}
                   </div>
-                  <div className="whitespace-pre-wrap">
+                  <div className="whitespace-pre-wrap overflow-wrap-break-word word-break-break-word max-w-full">
                     {post.is_deleted ? (
                       <div className="flex items-center space-x-2 text-gray-500 italic">
                         <FaTrashAlt className="text-red-500" />
@@ -653,10 +666,14 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
                     </div>
                   )}
                 </div>
-                {!post.is_deleted && userSignature && (
+                {!post.is_deleted && users[post.username]?.signature && (
                   <div className="mt-4 bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto">
                     <h3 className="text-lg font-semibold">User Signature:</h3>
-                    <p>{renderContentWithEmojisAndBBCode(userSignature)}</p>
+                    <div className="overflow-wrap-break-word word-break-break-word max-w-full">
+                      {renderContentWithEmojisAndBBCode(
+                        users[post.username].signature,
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -822,11 +839,12 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
               <div className="mb-4">
                 <h3 className="text-xl font-bold mb-2">Preview:</h3>
                 <div
-                  className="bg-gray-700/50 rounded-md p-4 whitespace-pre-wrap break-all"
+                  className="bg-gray-700/50 rounded-md p-4 whitespace-pre-wrap overflow-wrap-break-word word-break-break-word max-w-full"
                   dangerouslySetInnerHTML={{ __html: formatContent(content) }}
                 />
               </div>
             )}
+
             <button
               type="submit"
               className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"

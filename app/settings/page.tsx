@@ -7,6 +7,7 @@ import debounce from "lodash/debounce";
 
 const MAX_CHARACTERS = 250; // Set the maximum character limit
 const CHARACTERS_PER_LINE = 250; // Set the number of characters per line
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export default function SettingsPage() {
   const { data: session } = useSession();
@@ -227,9 +228,20 @@ export default function SettingsPage() {
     updateSetting("signature", { signature });
   };
 
-  const handleProfilePictureUpdate = (e: React.FormEvent) => {
+  const handleProfilePictureUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateSetting("profilePicture", { avatarUrl });
+    try {
+      const response = await fetch(avatarUrl);
+      const blob = await response.blob();
+      console.log("Comparing blob size", blob.size, MAX_IMAGE_SIZE);
+      if (blob.size > MAX_IMAGE_SIZE) {
+        setError("Profile picture size exceeds the maximum allowed (2MB)");
+        return;
+      }
+      updateSetting("profilePicture", { avatarUrl });
+    } catch (error) {
+      setError("Invalid image URL or unable to fetch the image");
+    }
   };
 
   const handlePasswordUpdate = (e: React.FormEvent) => {

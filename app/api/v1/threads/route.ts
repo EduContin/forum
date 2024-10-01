@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") || "1");
   const pageSize = parseInt(searchParams.get("pageSize") || "10");
-  const categorySlug = searchParams.get("categorySlug");
+  const categoryId = searchParams.get("categoryId");
   const threadId = searchParams.get("threadId");
   const userId = searchParams.get("userId");
 
@@ -26,11 +26,9 @@ export async function GET(request: NextRequest) {
     const queryParams: any[] = [];
     const whereConditions: string[] = [];
 
-    if (categorySlug) {
-      whereConditions.push(
-        `LOWER(REPLACE(c.name, ' ', '-')) = $${queryParams.length + 1}`,
-      );
-      queryParams.push(categorySlug);
+    if (categoryId) {
+      whereConditions.push(`t.category_id = $${queryParams.length + 1}`);
+      queryParams.push(categoryId);
     }
 
     if (threadId) {

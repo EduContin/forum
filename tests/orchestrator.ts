@@ -1,5 +1,7 @@
 import retry from "async-retry";
 
+const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 async function waitForAllServices() {
   await waitForWebServer();
 
@@ -10,7 +12,7 @@ async function waitForAllServices() {
     });
 
     async function fetchStatusPage() {
-      const response = await fetch("http://localhost:3000/api/v1/status");
+      const response = await fetch(`${apiUrl}api/v1/status`);
 
       if (response.status !== 200) {
         throw Error();

@@ -6,13 +6,15 @@ import { beforeAll, expect, test } from "vitest";
 
 import orchestrator from "tests/orchestrator";
 
+const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await database.query("DROP SCHEMA public cascade; CREATE SCHEMA public;");
 });
 
 test("GET to /api/v1/migrations should return 200", async () => {
-  const response = await fetch("http://localhost:3000/api/v1/migrations");
+  const response = await fetch(`${apiUrl}/api/v1/migrations`);
   expect(response.status).toBe(200);
 
   const responseBody = await response.json();

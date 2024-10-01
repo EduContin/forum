@@ -18,6 +18,7 @@ import {
   ListItemIcon,
   ListItemText,
   Link as MuiLink,
+  IconButton,
 } from "@mui/material";
 import PasswordStrengthBar from "react-password-strength-bar";
 import Link from "next/link";
@@ -26,6 +27,8 @@ import {
   CheckCircle,
   Security,
   Speed,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
 
 const FIXED_FLOAT_AFFILIATE_LINK = "https://ff.io/BTC/XMR/?ref=cpnqy9ga";
@@ -38,6 +41,7 @@ export default function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showExchangeInfo, setShowExchangeInfo] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
@@ -126,14 +130,23 @@ export default function RegisterForm() {
             className="w-full px-3 py-2 mb-4 border rounded bg-slate-800 border-slate-600 focus:border-blue-500 focus:ring-blue-500 text-white"
             required
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 mb-4 border rounded bg-slate-800 border-slate-600 focus:border-blue-500 focus:ring-blue-500 text-white"
-            required
-          />
+          <div className="relative mb-4">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 pr-10 border rounded bg-slate-800 border-slate-600 focus:border-blue-500 focus:ring-blue-500 text-white"
+              required
+            />
+            <IconButton
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2"
+              style={{ color: "white" }}
+            >
+              {showPassword ? <VisibilityOff /> : <Visibility />}
+            </IconButton>
+          </div>
           <PasswordStrengthBar password={password} />
           <div className="flex items-center mb-4">
             <label className="flex items-center cursor-pointer">
