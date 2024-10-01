@@ -76,6 +76,9 @@ const Navbar: React.FC = () => {
             <Link href="/mm" className="hover:text-blue-300 transition">
               MiddleMan
             </Link>
+            <Link href="/affiliate" className="hover:text-blue-300 transition">
+              Affiliate
+            </Link>
             <Link href="/help" className="hover:text-blue-300 transition">
               Help
             </Link>

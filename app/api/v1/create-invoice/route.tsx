@@ -1,3 +1,5 @@
+// app/api/v1/create-invoice/route.tsx
+
 import { storeUserDetails } from "@/lib/user";
 import { NextResponse } from "next/server";
 
@@ -7,7 +9,8 @@ const API_URL = "https://api.hoodpay.io/v1/businesses";
 
 export async function POST(request: Request) {
   try {
-    const { price_amount, username, email, password } = await request.json();
+    const { price_amount, username, email, password, referralCode } =
+      await request.json();
 
     if (!API_KEY || !BUSINESS_ID) {
       throw new Error("API key or Business ID is not defined");
@@ -44,8 +47,18 @@ export async function POST(request: Request) {
     const payment = await response.json();
     console.log("Payment created successfully:", payment);
 
-    // Store pending user data
-    storeUserDetails(processToken, { username, email, password });
+    // Store pending user data including the referral code
+    storeUserDetails(processToken, {
+      username,
+      email,
+      password,
+      referralCode,
+    } as {
+      username: string;
+      email: string;
+      password: string;
+      referralCode: string;
+    });
 
     return NextResponse.json({
       payment_url: payment.data.url,

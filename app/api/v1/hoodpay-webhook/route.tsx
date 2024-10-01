@@ -1,8 +1,11 @@
+// app/api/v1/hoodpay-webhook/route.tsx
+
 import { NextResponse } from "next/server";
 import {
   createUser,
   deleteUserDetails,
   getUserDetailsByOrderId,
+  processReferral,
 } from "@/lib/user";
 
 export async function POST(request: Request) {
@@ -28,11 +31,15 @@ export async function POST(request: Request) {
       if (userDetails) {
         console.log(`User details found for Process Token: ${processToken}`);
 
-        // Create the user
-        await createUser(userDetails);
+        const newUser = await createUser(userDetails);
         console.log(
           `User created successfully for Process Token: ${processToken}`,
         );
+
+        if (newUser) {
+          await processReferral(newUser.id, userDetails.referralCode);
+          console.log(`Referral processed for Process Token: ${processToken}`);
+        }
 
         // Delete temporary user details
         await deleteUserDetails(processToken);

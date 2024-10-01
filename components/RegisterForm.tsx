@@ -2,7 +2,8 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import React from "react";
 import {
   Alert,
@@ -43,6 +44,16 @@ export default function RegisterForm() {
   const [showExchangeInfo, setShowExchangeInfo] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (ref) {
+      setReferralCode(ref);
+    }
+  }, [searchParams]);
 
   const validateForm = () => {
     if (!username.trim() || !email.trim() || !password.trim()) {
@@ -76,10 +87,11 @@ export default function RegisterForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pay_currency: "USD",
-          price_amount: 0.5,
+          price_amount: 8,
           username,
           email,
           password,
+          referralCode,
         }),
       });
 
