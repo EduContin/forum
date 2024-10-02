@@ -324,8 +324,11 @@ export default function UserProfile({
               <div className="space-y-1 text-xs">
                 {[
                   { label: "Status", value: user.status || "Offline" },
-                  { label: "UID", value: user.uid },
-                  { label: "Registration Date", value: user.registration_date },
+                  { label: "UID", value: user.id },
+                  {
+                    label: "Registration Date",
+                    value: timeSinceLastActivity(user.created_at),
+                  },
                   { label: "Last Visit", value: user.last_visit },
                 ].map((item) => (
                   <div key={item.label} className="flex justify-between">
