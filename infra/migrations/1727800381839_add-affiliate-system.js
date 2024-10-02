@@ -8,7 +8,7 @@ exports.shorthands = undefined;
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-exports.up = function (pgm) {
+exports.up = async function (pgm) {
   // Add referral_code column to users table
   pgm.addColumn("users", {
     referral_code: { type: "varchar(20)", unique: true },

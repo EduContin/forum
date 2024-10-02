@@ -2,6 +2,7 @@
 
 "use client";
 
+import { ContentCopy } from "@mui/icons-material";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import {
@@ -15,6 +16,7 @@ import {
   Paper,
   Button,
   TextField,
+  Snackbar,
 } from "@mui/material";
 import { redirect } from "next/navigation";
 
@@ -24,7 +26,7 @@ interface ReferralData {
   createdAt: string;
 }
 
-interface UserBalance {
+interface User {
   id: number;
   username: string;
   balance: number;
@@ -36,9 +38,10 @@ export default function AffiliatePage() {
   const [referrals, setReferrals] = useState<ReferralData[]>([]);
   const [balance, setBalance] = useState(0);
   const [referralCode, setReferralCode] = useState("");
-  const [users, setUsers] = useState<UserBalance[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<number | null>(null);
   const [amount, setAmount] = useState("");
+  const [showCopiedMessage, setShowCopiedMessage] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -63,7 +66,7 @@ export default function AffiliatePage() {
   const fetchAffiliateData = async () => {
     try {
       const response = await fetch(`/api/v1/affiliate-data`, {
-        redirect: "follow", // This will automatically follow redirects
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -71,40 +74,89 @@ export default function AffiliatePage() {
       }
 
       const data = await response.json();
+      console.log("Affiliate data:", data);
       setReferrals(data.referrals);
-      setBalance(parseFloat(data.balance) || 0); // Ensure balance is a number
+      setBalance(parseFloat(data.balance) || 0);
       setReferralCode(data.referralCode);
     } catch (error) {
       console.error("Error fetching affiliate data:", error);
-      // Handle the error appropriately (e.g., show an error message to the user)
     }
   };
 
   const fetchUserBalances = async () => {
-    const response = await fetch("/api/v1/admin/user-balances");
-    const data = await response.json();
-    setUsers(data);
+    try {
+      console.log("Fetching user balances...");
+      const response = await fetch("/api/v1/admin/user-balances", {
+        credentials: "include",
+      });
+      console.log("Response status:", response.status);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Fetched user balances:", data);
+      setUsers(
+        data.map((user: any) => ({
+          ...user,
+          balance: parseFloat(user.balance) || 0,
+        })),
+      );
+    } catch (error) {
+      console.error("Error fetching user balances:", error);
+    }
   };
 
   const handleWithdrawal = async () => {
     if (!selectedUser || !amount) return;
 
-    const response = await fetch("/api/v1/admin/process-withdrawal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: selectedUser,
-        amount: parseFloat(amount),
-      }),
-    });
+    try {
+      const response = await fetch("/api/v1/admin/process-withdrawal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: selectedUser,
+          amount: parseFloat(amount),
+        }),
+      });
 
-    if (response.ok) {
-      alert("Withdrawal processed successfully");
-      setSelectedUser(null);
-      setAmount("");
-      fetchUserBalances();
-    } else {
+      if (response.ok) {
+        alert("Withdrawal processed successfully");
+        setSelectedUser(null);
+        setAmount("");
+        fetchUserBalances();
+      } else {
+        const errorData = await response.json();
+        alert(`Error processing withdrawal: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error("Error processing withdrawal:", error);
       alert("Error processing withdrawal");
+    }
+  };
+
+  const getReferralUrl = () => {
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    return `${baseUrl}/register?ref=${referralCode}`;
+  };
+
+  const copyReferralUrl = () => {
+    navigator.clipboard.writeText(getReferralUrl()).then(() => {
+      setShowCopiedMessage(true);
+    });
+  };
+
+  const formatBalance = (
+    balance: number | string | null | undefined,
+  ): string => {
+    if (typeof balance === "number") {
+      return balance.toFixed(2);
+    } else if (typeof balance === "string") {
+      const parsed = parseFloat(balance);
+      return isNaN(parsed) ? "0.00" : parsed.toFixed(2);
+    } else {
+      return "0.00";
     }
   };
 
@@ -117,9 +169,30 @@ export default function AffiliatePage() {
       <Typography variant="h4" gutterBottom>
         Affiliate Dashboard
       </Typography>
-      <Typography variant="h6">Your Referral Code: {referralCode}</Typography>
+      <div className="flex items-center mb-4">
+        <Typography variant="h6" className="mr-4">
+          Your Referral URL:
+        </Typography>
+        <TextField
+          value={getReferralUrl()}
+          variant="outlined"
+          size="small"
+          className="flex-grow mr-2"
+          InputProps={{
+            readOnly: true,
+          }}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<ContentCopy />}
+          onClick={copyReferralUrl}
+        >
+          Copy
+        </Button>
+      </div>
       <Typography variant="h6">
-        Available Balance: ${balance.toFixed(2)}
+        Available Balance: ${formatBalance(balance)}
       </Typography>
 
       <TableContainer component={Paper} className="mt-4">
@@ -138,7 +211,7 @@ export default function AffiliatePage() {
                   {referral.referredUsername}
                 </TableCell>
                 <TableCell align="right">
-                  ${referral.commission.toFixed(2)}
+                  ${formatBalance(referral.commission)}
                 </TableCell>
                 <TableCell align="right">
                   {new Date(referral.createdAt).toLocaleDateString()}
@@ -175,7 +248,7 @@ export default function AffiliatePage() {
                       {user.username}
                     </TableCell>
                     <TableCell align="right">
-                      ${user.balance.toFixed(2)}
+                      ${formatBalance(user.balance)}
                     </TableCell>
                     <TableCell align="right">
                       <Button
@@ -209,6 +282,12 @@ export default function AffiliatePage() {
               >
                 Confirm Withdrawal
               </Button>
+              <Snackbar
+                open={showCopiedMessage}
+                autoHideDuration={3000}
+                onClose={() => setShowCopiedMessage(false)}
+                message="Referral URL copied to clipboard"
+              />
             </div>
           )}
         </>
