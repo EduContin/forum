@@ -323,8 +323,8 @@ export default function UserProfile({
               </h2>
               <div className="space-y-1 text-xs">
                 {[
-                  { label: "Status", value: user.status || "Offline" },
                   { label: "UID", value: user.id },
+                  { label: "Status", value: user.status || "Offline" },
                   {
                     label: "Registration Date",
                     value: timeSinceLastActivity(user.created_at),
