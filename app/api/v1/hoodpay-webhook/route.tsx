@@ -5,7 +5,6 @@ import {
   createUser,
   deleteUserDetails,
   getUserDetailsByOrderId,
-  processReferral,
 } from "@/lib/user";
 
 export async function POST(request: Request) {
@@ -27,7 +26,7 @@ export async function POST(request: Request) {
     try {
       // Retrieve user details using the processToken
       const userDetails = await getUserDetailsByOrderId(processToken);
-
+      console.log(userDetails);
       if (userDetails) {
         console.log(`User details found for Process Token: ${processToken}`);
 
@@ -35,11 +34,7 @@ export async function POST(request: Request) {
         console.log(
           `User created successfully for Process Token: ${processToken}`,
         );
-
-        if (newUser) {
-          await processReferral(newUser.id, userDetails.referralCode);
-          console.log(`Referral processed for Process Token: ${processToken}`);
-        }
+        console.log(`New User: ${JSON.stringify(newUser, null, 2)}`);
 
         // Delete temporary user details
         await deleteUserDetails(processToken);

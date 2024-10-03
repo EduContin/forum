@@ -14,6 +14,7 @@ exports.up = async (pgm) => {
     username: { type: "varchar(255)", notNull: true },
     email: { type: "varchar(255)", notNull: true },
     password: { type: "varchar(255)", notNull: true },
+    referral: { type: "varchar(255)" },
     created_at: {
       type: "timestamp",
       notNull: true,
@@ -22,12 +23,10 @@ exports.up = async (pgm) => {
   });
 };
 
-exports.down = async (pgm) => {
-  pgm.dropTable("pending_users");
-};
 /**
  * @param pgm {import('node-pg-migrate').MigrationBuilder}
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-exports.down = (pgm) => {};
+// eslint-disable-next-line no-unused-vars
+exports.down = async (pgm) => {};
