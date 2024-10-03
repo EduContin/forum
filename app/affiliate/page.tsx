@@ -4,7 +4,7 @@
 
 import { ContentCopy } from "@mui/icons-material";
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import {
   Typography,
   Table,
@@ -29,9 +29,9 @@ import { redirect } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ReferralData {
-  referredUsername: string;
+  created_at: string | number | Date;
+  referred_username: ReactNode;
   commission: number;
-  createdAt: string;
 }
 
 interface User {
@@ -350,23 +350,25 @@ export default function AffiliatePage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {referrals.map((referral, index) => (
-                  <TableRow key={index}>
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      sx={{ color: "#ffffff" }}
-                    >
-                      {referral.referredUsername}
-                    </TableCell>
-                    <TableCell align="right" sx={{ color: "#38a169" }}>
-                      ${formatBalance(referral.commission)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ color: "#ffffff" }}>
-                      {new Date(referral.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {referrals.map((referral, index) => {
+                  return (
+                    <TableRow key={index}>
+                      <TableCell
+                        component="th"
+                        scope="row"
+                        sx={{ color: "#ffffff" }}
+                      >
+                        {referral.referred_username}
+                      </TableCell>
+                      <TableCell align="right" sx={{ color: "#38a169" }}>
+                        ${formatBalance(referral.commission)}
+                      </TableCell>
+                      <TableCell align="right" sx={{ color: "#ffffff" }}>
+                        {new Date(referral.created_at).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>
