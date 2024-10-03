@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
     const payment = await response.json();
     console.log("Payment created successfully:", payment);
-
+    console.log("Referral code: ", referralCode);
     // Store pending user data including the referral code
     storeUserDetails(processToken, {
       username,

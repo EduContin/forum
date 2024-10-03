@@ -13,12 +13,20 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Button,
   TextField,
   Snackbar,
+  Box,
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import { redirect } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ReferralData {
   referredUsername: string;
@@ -32,6 +40,66 @@ interface User {
   balance: number;
 }
 
+const styles = {
+  container: {
+    margin: "0 20px",
+    backgroundColor: "#1f2531",
+    borderRadius: "10px",
+    padding: "20px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+  },
+  header: {
+    marginBottom: "20px",
+    padding: "15px",
+    backgroundColor: "rgba(76, 153, 229, 0.1)",
+    borderRadius: "8px",
+  },
+  button: {
+    backgroundColor: "#4a90e2",
+    color: "#ffffff",
+    borderRadius: "8px",
+    padding: "10px 15px",
+    "&:hover": {
+      backgroundColor: "#3b78d6",
+    },
+  },
+  buttonActive: {
+    backgroundColor: "#38a169",
+    "&:hover": {
+      backgroundColor: "#2f855a",
+    },
+  },
+  textField: {
+    "& .MuiOutlinedInput-root": {
+      "& fieldset": {
+        borderColor: "rgba(76, 153, 229, 0.6)",
+      },
+      "&:hover fieldset": {
+        borderColor: "rgba(76, 153, 229, 0.8)",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "#4a90e2",
+      },
+    },
+    "& .MuiInputLabel-root": {
+      color: "rgba(255, 255, 255, 0.7)",
+    },
+    "& .MuiInputBase-input": {
+      color: "#ffffff",
+    },
+  },
+  table: {
+    "& .MuiTableCell-head": {
+      backgroundColor: "rgba(76, 153, 229, 0.2)",
+      color: "#ffffff",
+      fontWeight: "bold",
+    },
+    "& .MuiTableCell-body": {
+      borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
+    },
+  },
+};
+
 export default function AffiliatePage() {
   const { data: session, status } = useSession();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -42,6 +110,8 @@ export default function AffiliatePage() {
   const [selectedUser, setSelectedUser] = useState<number | null>(null);
   const [amount, setAmount] = useState("");
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
+  const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);
+  const [withdrawalAmount, setWithdrawalAmount] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -74,7 +144,6 @@ export default function AffiliatePage() {
       }
 
       const data = await response.json();
-      console.log("Affiliate data:", data);
       setReferrals(data.referrals);
       setBalance(parseFloat(data.balance) || 0);
       setReferralCode(data.referralCode);
@@ -85,18 +154,15 @@ export default function AffiliatePage() {
 
   const fetchUserBalances = async () => {
     try {
-      console.log("Fetching user balances...");
       const response = await fetch("/api/v1/admin/user-balances", {
         credentials: "include",
       });
-      console.log("Response status:", response.status);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("Fetched user balances:", data);
       setUsers(
         data.map((user: any) => ({
           ...user,
@@ -136,6 +202,31 @@ export default function AffiliatePage() {
     }
   };
 
+  const handleUserWithdrawal = async () => {
+    try {
+      const response = await fetch("/api/v1/affiliate/request-withdrawal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: parseFloat(withdrawalAmount),
+        }),
+      });
+
+      if (response.ok) {
+        alert("Withdrawal request submitted successfully");
+        setOpenWithdrawalDialog(false);
+        setWithdrawalAmount("");
+        fetchAffiliateData();
+      } else {
+        const errorData = await response.json();
+        alert(`Error requesting withdrawal: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error("Error requesting withdrawal:", error);
+      alert("Error requesting withdrawal");
+    }
+  };
+
   const getReferralUrl = () => {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
     return `${baseUrl}/register?ref=${referralCode}`;
@@ -165,133 +256,218 @@ export default function AffiliatePage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <Typography variant="h4" gutterBottom>
+    <Box sx={styles.container}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ color: "#ffffff", fontWeight: 300 }}
+      >
         Affiliate Dashboard
       </Typography>
-      <div className="flex items-center mb-4">
-        <Typography variant="h6" className="mr-4">
-          Your Referral URL:
-        </Typography>
-        <TextField
-          value={getReferralUrl()}
-          variant="outlined"
-          size="small"
-          className="flex-grow mr-2"
-          InputProps={{
-            readOnly: true,
-          }}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<ContentCopy />}
-          onClick={copyReferralUrl}
-        >
-          Copy
-        </Button>
-      </div>
-      <Typography variant="h6">
-        Available Balance: ${formatBalance(balance)}
-      </Typography>
-
-      <TableContainer component={Paper} className="mt-4">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Referred User</TableCell>
-              <TableCell align="right">Commission</TableCell>
-              <TableCell align="right">Date</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {referrals.map((referral, index) => (
-              <TableRow key={index}>
-                <TableCell component="th" scope="row">
-                  {referral.referredUsername}
-                </TableCell>
-                <TableCell align="right">
-                  ${formatBalance(referral.commission)}
-                </TableCell>
-                <TableCell align="right">
-                  {new Date(referral.createdAt).toLocaleDateString()}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <Button variant="contained" color="primary" className="mt-4">
-        Request Withdrawal
-      </Button>
-
-      {isAdmin && (
-        <>
-          <Typography variant="h4" gutterBottom className="mt-8">
-            Admin Affiliate Panel
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Box sx={styles.header}>
+          <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
+            Instructions
           </Typography>
+          <Typography variant="body1" sx={{ color: "#a1a1a6" }}>
+            If you refer a person, you get 25% of the registration fee ($2).
+            <br />
+            If someone you referred refers someone, you get 10% of the
+            registration fee ($0.8).
+            <br />
+            Simply share this link and make money easily!
+            <br />
+            Grow the community you paid for to access!
+          </Typography>
+        </Box>
 
-          <TableContainer component={Paper} className="mt-4">
-            <Table>
+        <Box sx={styles.header}>
+          <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
+            Your Referral URL
+          </Typography>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={8}>
+              <TextField
+                value={getReferralUrl()}
+                variant="outlined"
+                size="small"
+                fullWidth
+                InputProps={{
+                  readOnly: true,
+                  style: {
+                    color: "#ffffff",
+                    backgroundColor: "rgba(76, 153, 229, 0.1)",
+                  },
+                }}
+                sx={styles.textField}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Button
+                variant="contained"
+                startIcon={<ContentCopy />}
+                onClick={copyReferralUrl}
+                fullWidth
+                sx={styles.button}
+              >
+                Copy
+              </Button>
+            </Grid>
+          </Grid>
+        </Box>
+
+        <Box sx={styles.header}>
+          <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
+            Available Balance
+          </Typography>
+          <Typography variant="h4" sx={{ color: "#38a169" }}>
+            ${formatBalance(balance)}
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => setOpenWithdrawalDialog(true)}
+            sx={{ ...styles.button, ...styles.buttonActive, mt: 2 }}
+          >
+            Request Withdrawal
+          </Button>
+        </Box>
+
+        <Box sx={styles.header}>
+          <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
+            Referral History
+          </Typography>
+          <TableContainer>
+            <Table sx={styles.table}>
               <TableHead>
                 <TableRow>
-                  <TableCell>Username</TableCell>
-                  <TableCell align="right">Balance</TableCell>
-                  <TableCell align="right">Action</TableCell>
+                  <TableCell>Referred User</TableCell>
+                  <TableCell align="right">Commission</TableCell>
+                  <TableCell align="right">Date</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell component="th" scope="row">
-                      {user.username}
+                {referrals.map((referral, index) => (
+                  <TableRow key={index}>
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      sx={{ color: "#ffffff" }}
+                    >
+                      {referral.referredUsername}
                     </TableCell>
-                    <TableCell align="right">
-                      ${formatBalance(user.balance)}
+                    <TableCell align="right" sx={{ color: "#38a169" }}>
+                      ${formatBalance(referral.commission)}
                     </TableCell>
-                    <TableCell align="right">
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => setSelectedUser(user.id)}
-                      >
-                        Process Withdrawal
-                      </Button>
+                    <TableCell align="right" sx={{ color: "#ffffff" }}>
+                      {new Date(referral.createdAt).toLocaleDateString()}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
+        </Box>
 
-          {selectedUser && (
-            <div className="mt-4">
-              <Typography variant="h6">Process Withdrawal</Typography>
-              <TextField
-                label="Amount"
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="mr-2"
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleWithdrawal}
-              >
-                Confirm Withdrawal
-              </Button>
-              <Snackbar
-                open={showCopiedMessage}
-                autoHideDuration={3000}
-                onClose={() => setShowCopiedMessage(false)}
-                message="Referral URL copied to clipboard"
-              />
-            </div>
-          )}
-        </>
-      )}
-    </div>
+        {isAdmin && (
+          <Box sx={styles.header}>
+            <Typography variant="h5" gutterBottom sx={{ color: "#ffffff" }}>
+              Admin Affiliate Panel
+            </Typography>
+            <TableContainer>
+              <Table sx={styles.table}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Username</TableCell>
+                    <TableCell align="right">Balance</TableCell>
+                    <TableCell align="right">Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {users.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell
+                        component="th"
+                        scope="row"
+                        sx={{ color: "#ffffff" }}
+                      >
+                        {user.username}
+                      </TableCell>
+                      <TableCell align="right" sx={{ color: "#38a169" }}>
+                        ${formatBalance(user.balance)}
+                      </TableCell>
+                      <TableCell align="right">
+                        <Tooltip title="Process Withdrawal">
+                          <IconButton
+                            onClick={() => setSelectedUser(user.id)}
+                            sx={{ color: "#4a90e2" }}
+                          >
+                            <ContentCopy />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        )}
+      </motion.div>
+
+      <Dialog open={!!selectedUser} onClose={() => setSelectedUser(null)}>
+        <DialogTitle>Process Withdrawal</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Amount"
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            fullWidth
+            margin="normal"
+            sx={styles.textField}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setSelectedUser(null)}
+            sx={{ color: "#4a90e2" }}
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleWithdrawal} sx={styles.button}>
+            Confirm Withdrawal
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openWithdrawalDialog}
+        onClose={() => setOpenWithdrawalDialog(false)}
+      >
+        <DialogTitle>Request Withdrawal</DialogTitle>
+        <DialogContent>
+          <Typography
+            variant="body1"
+            sx={{ color: "#000000", marginBottom: "1rem" }}
+          >
+            Contact alpened@proton.me with your Bitcoin (BTC) address using the
+            same email of your Alpened account, and the amount you want to
+            withdraw. Make sure to have enough balance. The minimum withdraw is
+            $5.
+          </Typography>
+        </DialogContent>
+      </Dialog>
+
+      <Snackbar
+        open={showCopiedMessage}
+        autoHideDuration={3000}
+        onClose={() => setShowCopiedMessage(false)}
+        message="Referral URL copied to clipboard"
+      />
+    </Box>
   );
 }

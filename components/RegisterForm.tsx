@@ -87,7 +87,7 @@ export default function RegisterForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pay_currency: "USD",
-          price_amount: 8,
+          price_amount: 0.5,
           username,
           email,
           password,
