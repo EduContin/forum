@@ -382,6 +382,8 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
           <Image
             src={user.avatar_url || `/winter_soldier.gif`}
             alt="Profile Picture"
+            width={10}
+            height={10}
             className="absolute left-1/2 transform -translate-x-1/2 -bottom-12 w-24 h-24 rounded-full border-4 border-gray-800 object-cover"
           />
         </div>
