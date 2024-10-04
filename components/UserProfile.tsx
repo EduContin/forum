@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import customEmojis from "@/models/custom-emojis";
+import Image from "next/image";
 
 const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -172,7 +173,7 @@ export default function UserProfile({
       const emojiUrl = customEmojis[part as keyof typeof customEmojis];
       if (emojiUrl) {
         return (
-          <img
+          <Image
             key={index}
             src={emojiUrl}
             alt={part}
@@ -248,7 +249,7 @@ export default function UserProfile({
               transition={{ duration: 0.5 }}
               className="w-40 h-40 rounded-lg overflow-hidden shadow-lg mb-6 md:mb-0 md:mr-8"
             >
-              <img
+              <Image
                 src={user.avatar_url || "/winter_soldier.gif"}
                 alt={user.username}
                 width={160}
@@ -419,7 +420,7 @@ export default function UserProfile({
                 <div className="flex flex-wrap gap-2 p-1 items-start content-start">
                   {awards.map((award, index) => (
                     <div key={index} className="w-7 h-7 flex-shrink-0">
-                      <img
+                      <Image
                         src={`/badges/${award.name}`}
                         alt={award.name.slice(0, -4)}
                         className="w-full h-full object-contain"

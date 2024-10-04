@@ -242,8 +242,8 @@ const HelpPage: React.FC = () => {
               time without warning.
             </li>
             <li>
-              All content posted within the forum falls under Alpened's domain,
-              and we retain rights over it.
+              All content posted within the forum falls under Alpened&apos;s
+              domain, and we retain rights over it.
             </li>
             <li>
               Alpened reserves the right to ban users without further warning at

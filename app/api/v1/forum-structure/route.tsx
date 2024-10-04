@@ -1,8 +1,7 @@
-import { NextApiRequest, NextApiResponse } from "next";
 import database from "infra/database";
 import { NextResponse } from "next/server";
 
-export async function GET(req: NextApiRequest, res: NextApiResponse) {
+export async function GET() {
   try {
     const sectionsQuery = `
       SELECT s.id, s.name, s.description,

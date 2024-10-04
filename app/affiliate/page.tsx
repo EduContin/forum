@@ -26,7 +26,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { redirect } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface ReferralData {
   created_at: string | number | Date;
@@ -111,7 +111,6 @@ export default function AffiliatePage() {
   const [amount, setAmount] = useState("");
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const [openWithdrawalDialog, setOpenWithdrawalDialog] = useState(false);
-  const [withdrawalAmount, setWithdrawalAmount] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -199,31 +198,6 @@ export default function AffiliatePage() {
     } catch (error) {
       console.error("Error processing withdrawal:", error);
       alert("Error processing withdrawal");
-    }
-  };
-
-  const handleUserWithdrawal = async () => {
-    try {
-      const response = await fetch("/api/v1/affiliate/request-withdrawal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: parseFloat(withdrawalAmount),
-        }),
-      });
-
-      if (response.ok) {
-        alert("Withdrawal request submitted successfully");
-        setOpenWithdrawalDialog(false);
-        setWithdrawalAmount("");
-        fetchAffiliateData();
-      } else {
-        const errorData = await response.json();
-        alert(`Error requesting withdrawal: ${errorData.error}`);
-      }
-    } catch (error) {
-      console.error("Error requesting withdrawal:", error);
-      alert("Error requesting withdrawal");
     }
   };
 

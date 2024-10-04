@@ -279,8 +279,8 @@ export default function RegisterForm() {
                 secondary={
                   <span className="text-slate-300">
                     Choose the cryptocurrency you want to exchange (e.g., BTC,
-                    ETH) as the 'You Send' currency, and select XMR as the 'You
-                    Get' currency.
+                    ETH) as the &apos;You Send&apos; currency, and select XMR as
+                    the &apos;You Get&apos; currency.
                   </span>
                 }
               />
@@ -293,7 +293,7 @@ export default function RegisterForm() {
                 primary={<span className="text-white">3. Enter Amount</span>}
                 secondary={
                   <span className="text-slate-300">
-                    Specify the amount you want to exchange. Make sure it's
+                    Specify the amount you want to exchange. Make sure it&apos;s
                     enough to cover the 8 XMR registration fee plus any
                     transaction fees.
                   </span>
@@ -343,8 +343,8 @@ export default function RegisterForm() {
                 primary={<span className="text-white">6. Receive XMR</span>}
                 secondary={
                   <span className="text-slate-300">
-                    Once the exchange is complete, you'll receive the XMR in
-                    your specified wallet address.
+                    Once the exchange is complete, you&apos;ll receive the XMR
+                    in your specified wallet address.
                   </span>
                 }
               />

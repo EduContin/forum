@@ -230,7 +230,7 @@ const Shoutbox = () => {
               >
                 <div className="flex items-start">
                   <a href={`/users/${msg.username}`} className="flex-shrink-0">
-                    <img
+                    <Image
                       src={msg.avatar_url || "/winter_soldier.gif"}
                       alt="Profile"
                       className="h-7 w-7 mr-2 rounded-lg"

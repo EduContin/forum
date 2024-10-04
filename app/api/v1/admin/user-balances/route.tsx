@@ -5,7 +5,7 @@ import database from "@/infra/database";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET(request: Request) {
+export async function GET() {
   console.log("API route hit: /api/v1/admin/user-balances");
 
   const session = await getServerSession(authOptions);

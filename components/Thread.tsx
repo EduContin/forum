@@ -54,13 +54,12 @@ interface ThreadProps {
 const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
   const { data: session } = useSession();
   const router = useRouter();
-  const [replyContent, setReplyContent] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [posts, setPosts] = useState(initialPosts);
-  const [userSignature, setUserSignature] = useState("");
+  const [, setUserSignature] = useState("");
   const [users, setUsers] = useState<{ [key: string]: User }>({});
   const [content, setContent] = useState("");
-  const [contentHistory, setContentHistory] = useState<string[]>([""]);
+  const [, setContentHistory] = useState<string[]>([""]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -342,7 +341,7 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
 
     fetchLikes();
     fetchUsers();
-  }, [session, initialPosts]);
+  }, [session, initialPosts, posts]);
 
   useEffect(() => {
     const fetchSignature = async () => {
@@ -380,7 +379,7 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
               </a>
             </h3>
           </div>
-          <img
+          <Image
             src={user.avatar_url || `/winter_soldier.gif`}
             alt="Profile Picture"
             className="absolute left-1/2 transform -translate-x-1/2 -bottom-12 w-24 h-24 rounded-full border-4 border-gray-800 object-cover"

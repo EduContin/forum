@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import Image from "next/image";
 
 const Navbar: React.FC = () => {
   const { data: session } = useSession();
@@ -100,7 +101,7 @@ const Navbar: React.FC = () => {
                   className="flex items-center space-x-2 cursor-pointer"
                   onClick={toggleDropdown}
                 >
-                  <img
+                  <Image
                     src={avatarUrl || "/winter_soldier.gif"}
                     alt={session.user.name || "User"}
                     width={32}

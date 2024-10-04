@@ -24,30 +24,30 @@ const UserThreads: React.FC = () => {
   const threadsPerPage = 10;
 
   useEffect(() => {
+    const fetchUserThreads = async (page: number) => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `/api/v1/users/${userUsername}/threads?page=${page}&limit=${threadsPerPage}`,
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setThreads(data.threads);
+          setTotalPages(data.totalPages);
+        } else {
+          console.error("Failed to fetch user threads");
+        }
+      } catch (error) {
+        console.error("Error fetching user threads:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (userUsername) {
       fetchUserThreads(currentPage);
     }
   }, [userUsername, currentPage]);
-
-  const fetchUserThreads = async (page: number) => {
-    setLoading(true);
-    try {
-      const response = await fetch(
-        `/api/v1/users/${userUsername}/threads?page=${page}&limit=${threadsPerPage}`,
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setThreads(data.threads);
-        setTotalPages(data.totalPages);
-      } else {
-        console.error("Failed to fetch user threads");
-      }
-    } catch (error) {
-      console.error("Error fetching user threads:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
