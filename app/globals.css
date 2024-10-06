@@ -141,3 +141,7 @@ video,
   height: auto;
   object-fit: cover;
 }
+
+.register-form-container {
+  transform: translateY(-50px);
+}
