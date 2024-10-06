@@ -9,12 +9,16 @@ import Image from "next/image";
 import customEmojis from "@/models/custom-emojis";
 
 const MAX_MESSAGE_LENGTH = 300;
-const USERNAME_WIDTH = "100px"; // Adjust this value as needed
 
 interface Message {
   id: number;
   username: string;
   message: string;
+  avatar_url?: string;
+}
+
+interface User {
+  avatar_url: string;
 }
 
 const Shoutbox = () => {
@@ -32,23 +36,38 @@ const Shoutbox = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:4000", { withCredentials: true });
+    const newSocket = io(
+      process.env.NEXT_PUBLIC_SHOUTBOX_SOCKET || "http://localhost:4000",
+      { withCredentials: true },
+    );
     setSocket(newSocket);
 
     newSocket.on("message", (message: Message) => {
-      setMessages((prevMessages) => [message, ...prevMessages]);
+      fetchUserAvatar(message.username).then((avatarUrl) => {
+        setMessages((prevMessages) => [
+          { ...message, avatar_url: avatarUrl },
+          ...prevMessages,
+        ]);
+      });
     });
 
     newSocket.on("messageUpdated", (updatedMessage: Message) => {
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
-          msg.id === updatedMessage.id ? updatedMessage : msg,
+          msg.id === updatedMessage.id
+            ? { ...updatedMessage, avatar_url: msg.avatar_url }
+            : msg,
         ),
       );
     });
 
     newSocket.on("recentMessages", (recentMessages: Message[]) => {
-      setMessages(recentMessages);
+      Promise.all(
+        recentMessages.map(async (message) => {
+          const avatarUrl = await fetchUserAvatar(message.username);
+          return { ...message, avatar_url: avatarUrl };
+        }),
+      ).then(setMessages);
     });
 
     newSocket.on("message_error", (error: string) => {
@@ -59,7 +78,12 @@ const Shoutbox = () => {
     fetch("/api/v1/shoutbox/history")
       .then((response) => response.json())
       .then((data) => {
-        setMessages(data.rows);
+        Promise.all(
+          data.rows.map(async (message: Message) => {
+            const avatarUrl = await fetchUserAvatar(message.username);
+            return { ...message, avatar_url: avatarUrl };
+          }),
+        ).then(setMessages);
       })
       .catch((error) =>
         console.error("Error fetching shoutbox history:", error),
@@ -69,6 +93,19 @@ const Shoutbox = () => {
       newSocket.disconnect();
     };
   }, []);
+
+  const fetchUserAvatar = async (username: string): Promise<string> => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_APP_URL}/api/v1/users/${username}`,
+      );
+      const userData: User = await response.json();
+      return userData.avatar_url;
+    } catch (error) {
+      console.error("Error fetching user avatar:", error);
+      return "/default-avatar.png"; // Provide a default avatar URL
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputMessage(e.target.value);
@@ -174,7 +211,6 @@ const Shoutbox = () => {
 
   const handleEmojiClick = (emoji: string) => {
     setInputMessage((prevMessage) => prevMessage + emoji);
-    setShowEmojiPicker(false);
   };
 
   return (
@@ -190,35 +226,34 @@ const Shoutbox = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="bg-gray-900 py-2 px-2 rounded-md"
+                className="bg-gray-900 py-2 px-2 rounded-lg"
               >
                 <div className="flex items-start">
-                  <a href={`/users/${msg.username}`}>
+                  <a href={`/users/${msg.username}`} className="flex-shrink-0">
                     <Image
-                      src="/winter_soldier.gif"
+                      src={msg.avatar_url || "/winter_soldier.gif"}
                       alt="Profile"
-                      className="h-7 w-7 mr-2 flex-shrink-0"
-                      width={0}
-                      height={0}
+                      className="h-7 w-7 mr-2 rounded-lg"
+                      width={28}
+                      height={28}
                     />
                   </a>
                   <a
                     href={`/users/${msg.username}`}
-                    className="text-sm mr-1 text-right mt-1"
+                    className="text-sm mr-1 text-right mt-1 flex-shrink-0"
                     style={{
                       width: `${msg.username.length * 8}px`,
-                      minWidth: USERNAME_WIDTH,
+                      minWidth: "100px",
                       display: "inline-block",
                     }}
                   >
                     {msg.username}
                   </a>
-                  <div className="mt-1 pl-4">
-                    <p className="text-gray-400 text-sm break-all">
+                  <div className="mt-1 pl-4 flex-grow overflow-hidden">
+                    <p className="text-gray-400 text-sm break-words">
                       {renderMessageWithEmojis(msg.message)}
                     </p>
                   </div>
-                  <div className="flex-grow"></div>
                   {session && session.user.name === msg.username && (
                     <button
                       onClick={() => handleEditMessage(msg.id)}
@@ -242,7 +277,7 @@ const Shoutbox = () => {
           value={inputMessage}
           onChange={handleInputChange}
           onKeyPress={handleKeyPress}
-          className="flex-grow p-2 rounded-l-md bg-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          className="flex-grow p-2 rounded-lg bg-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           placeholder={
             editingMessageId ? "Edit your message..." : "Type your message..."
           }
@@ -250,37 +285,38 @@ const Shoutbox = () => {
         />
         <button
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          className="p-1.5 pl-2 pr-2 ml-1 bg-gray-600 text-white rounded-md hover:bg-gray-500 focus:outline-none transition-colors"
+          className="p-1.5 pl-2 pr-2 ml-1 bg-gray-600 text-white rounded-lg hover:bg-gray-500 focus:outline-none transition-colors"
         >
           😀
         </button>
-        {showEmojiPicker && (
-          <div className="absolute right-0 bottom-full mb-2 bg-gray-800 p-2 rounded-md shadow-lg">
-            {Object.keys(customEmojis).map((emoji) => (
-              <button
-                key={emoji}
-                onClick={() => handleEmojiClick(emoji)}
-                className="m-1 p-1 hover:bg-gray-700 rounded"
-              >
-                <Image
-                  src={customEmojis[emoji]}
-                  alt={emoji}
-                  className="w-6 h-6"
-                  width={0}
-                  height={0}
-                />
-              </button>
-            ))}
-          </div>
-        )}
       </div>
+      {showEmojiPicker && (
+        <div className="relative right-0 bottom-full mb-2 bg-gray-800 p-2 rounded-lg shadow-lg">
+          {Object.keys(customEmojis).map((emoji) => (
+            <button
+              key={emoji}
+              onClick={() => handleEmojiClick(emoji)}
+              className="m-1 p-1 hover:bg-gray-700 rounded-lg"
+            >
+              <Image
+                src={customEmojis[emoji]}
+                alt={emoji}
+                className="w-6 h-6"
+                width={0}
+                height={0}
+                unoptimized
+              />
+            </button>
+          ))}
+        </div>
+      )}
       {errorMessage && (
         <p className="text-red-500 mt-1 text-xs">{errorMessage}</p>
       )}
       {editingMessageId && (
         <button
           onClick={handleCancelEdit}
-          className="mt-2 px-3 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none transition-colors text-xs"
+          className="mt-2 px-3 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none transition-colors text-xs"
         >
           Cancel
         </button>

@@ -1,3 +1,5 @@
+const bcrypt = require("bcrypt");
+
 /**
  * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
  */
@@ -8,7 +10,7 @@ exports.shorthands = undefined;
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-exports.up = (pgm) => {
+exports.up = async (pgm) => {
   pgm.createTable("users", {
     id: "id",
     username: { type: "varchar(255)", notNull: true, unique: true },
@@ -28,6 +30,9 @@ exports.up = (pgm) => {
     reputation: { type: "integer", notNull: true, default: 0 },
     vouches: { type: "integer", notNull: true, default: 0 },
     last_seen: { type: "timestamp" },
+    signature: { type: "text" },
+    caution: { type: "boolean", notNull: true, default: false },
+    banned: { type: "boolean", notNull: true, default: false },
   });
 
   pgm.createTable("user_reputations", {
@@ -61,6 +66,27 @@ exports.up = (pgm) => {
   pgm.createIndex("user_reputations", ["user_id", "voter_id"], {
     unique: true,
   });
+
+  // Hash the password
+  const hashedPassword = await bcrypt.hash("Test123@#", 10);
+
+  // Insert an admin user with hashed password
+  pgm.sql(`
+    INSERT INTO users (username, email, password, user_group, created_at)
+    VALUES ('admin', 'admin@example.com', '${hashedPassword}', 'Admin', current_timestamp);
+  `);
+
+  // Insert a regular user with hashed password
+  pgm.sql(`
+    INSERT INTO users (username, email, password, user_group, created_at)
+    VALUES ('Test', 'test@example.com', '${hashedPassword}', 'Member', current_timestamp);
+  `);
+
+  // Insert an banned user with hashed password
+  pgm.sql(`
+    INSERT INTO users (username, email, password, user_group, created_at, banned)
+    VALUES ('banned', 'banned@example.com', '${hashedPassword}', 'Member', current_timestamp, true);
+  `);
 };
 
 /**

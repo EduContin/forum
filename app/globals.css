@@ -89,3 +89,55 @@
 .transition {
   @apply transition-all duration-200 ease-in-out;
 }
+
+.spoiler-content {
+  filter: blur(5px);
+  transition: filter 0.35s ease;
+}
+
+.spoiler-content:hover,
+.spoiler-content:focus {
+  filter: blur(0);
+}
+
+blockquote {
+  border-left: 3px solid #4a5568;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+}
+
+pre {
+  background-color: #2d3748;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+}
+
+code {
+  font-family: monospace;
+}
+
+.hidden-content {
+  background-color: #1f2531;
+  color: #c50000;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  user-select: none;
+}
+
+.overflow-wrap-break-word {
+  overflow-wrap: break-word;
+}
+
+.word-break-break-word {
+  word-break: break-word;
+}
+
+img,
+video,
+.gif {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+}

@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     const result = await database.query({
       text: `
-        SELECT p.*, u.username
+        SELECT p.*, u.username, u.avatar_url
         FROM posts p
         JOIN users u ON p.user_id = u.id
         WHERE p.thread_id = $1
@@ -43,6 +43,39 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ postId: result.rows[0].id }, { status: 201 });
   } catch (error) {
     console.error("Error creating post:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const postId = searchParams.get("postId");
+
+  if (!postId) {
+    return NextResponse.json({ error: "Post ID is required" }, { status: 400 });
+  }
+
+  try {
+    const result = await database.query({
+      text: `
+        UPDATE posts
+        SET content = 'This content was deleted', is_deleted = true
+        WHERE id = $1
+        RETURNING id, content, is_deleted
+      `,
+      values: [postId],
+    });
+
+    if (result.rowCount === 0) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error deleting post:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

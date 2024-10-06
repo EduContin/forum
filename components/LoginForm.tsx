@@ -1,9 +1,9 @@
-// /Login/page.tsx
 "use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, Button, Snackbar } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import MountainBackground from "./MountainBackground";
@@ -14,6 +14,7 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,7 +42,7 @@ export default function LoginForm() {
         setIsSuccess(true);
         setTimeout(() => {
           router.push("/");
-        }, 2000); // Delay navigation to show success animation
+        }, 2000);
       } else {
         const data = await response.json();
         setError(data.message || "Login failed");
@@ -73,13 +74,22 @@ export default function LoginForm() {
             className="w-full px-3 py-2 mb-4 border rounded"
             autoFocus
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 mb-4 border rounded"
-          />
+          <div className="relative mb-4">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 pr-10 border rounded"
+            />
+            <Button
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2"
+              style={{ minWidth: "auto", padding: "6px" }}
+            >
+              {showPassword ? <VisibilityOff /> : <Visibility />}
+            </Button>
+          </div>
           <Button
             type="submit"
             variant="contained"

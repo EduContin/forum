@@ -8,6 +8,7 @@ import Image from "next/image";
 const Navbar: React.FC = () => {
   const { data: session } = useSession();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -30,6 +31,24 @@ const Navbar: React.FC = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    const fetchAvatarUrl = async () => {
+      if (session?.user?.name) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL}/api/v1/users/${session.user.name}`,
+          );
+          const userData = await response.json();
+          setAvatarUrl(userData.avatar_url);
+        } catch (error) {
+          console.error("Error fetching avatar URL:", error);
+        }
+      }
+    };
+
+    fetchAvatarUrl();
+  }, [session]);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -58,6 +77,9 @@ const Navbar: React.FC = () => {
             <Link href="/mm" className="hover:text-blue-300 transition">
               MiddleMan
             </Link>
+            <Link href="/affiliate" className="hover:text-blue-300 transition">
+              Affiliate
+            </Link>
             <Link href="/help" className="hover:text-blue-300 transition">
               Help
             </Link>
@@ -65,10 +87,10 @@ const Navbar: React.FC = () => {
 
           <div className="flex items-center space-x-4">
             <div className="flex space-x-2">
-              <div className="bg-gray-700 px-3 py-1 rounded">
+              <div className="bg-gray-700 px-3 py-1 rounded-lg">
                 <span className="text-yellow-400">Credits:</span> 0
               </div>
-              <div className="bg-gray-700 px-3 py-1 rounded">
+              <div className="bg-gray-700 px-3 py-1 rounded-lg">
                 <span className="text-orange-400">BTC:</span> 0.00000000
               </div>
             </div>
@@ -80,17 +102,17 @@ const Navbar: React.FC = () => {
                   onClick={toggleDropdown}
                 >
                   <Image
-                    src={session.user.image || "/winter_soldier.gif"}
+                    src={avatarUrl || "/winter_soldier.gif"}
                     alt={session.user.name || "User"}
                     width={32}
                     height={32}
-                    className="rounded-full w-7 h-7"
+                    className="rounded-lg w-7 h-7"
                   />
                   <span>{session.user.name}</span>
                 </div>
                 {isDropdownOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg py-1 z-50"
+                    className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-lg shadow-lg py-1 z-50"
                     onClick={handleDropdownClick}
                   >
                     <Link

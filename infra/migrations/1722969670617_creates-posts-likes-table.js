@@ -12,7 +12,12 @@ exports.up = (pgm) => {
   pgm.createTable("likes", {
     id: "id",
     user_id: { type: "integer", notNull: true, references: "users" },
-    post_id: { type: "integer", notNull: true, references: "posts" },
+    post_id: {
+      type: "integer",
+      notNull: true,
+      references: "posts",
+      onDelete: "CASCADE", // Add this line
+    },
     created_at: {
       type: "timestamp",
       notNull: true,
@@ -25,7 +30,6 @@ exports.up = (pgm) => {
     unique: ["user_id", "post_id"],
   });
 };
-
 /**
  * @param pgm {import('node-pg-migrate').MigrationBuilder}
  * @param run {() => void | undefined}

@@ -6,8 +6,9 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") || "1");
   const pageSize = parseInt(searchParams.get("pageSize") || "10");
-  const categorySlug = searchParams.get("categorySlug");
+  const categoryId = searchParams.get("categoryId");
   const threadId = searchParams.get("threadId");
+  const userId = searchParams.get("userId");
 
   const offset = (page - 1) * pageSize;
 
@@ -23,17 +24,30 @@ export async function GET(request: NextRequest) {
     `;
 
     const queryParams: any[] = [];
-    if (categorySlug) {
-      query += ` WHERE LOWER(REPLACE(c.name, ' ', '-')) = $1`;
-      queryParams.push(categorySlug);
-    } else if (threadId) {
-      query += ` WHERE t.id = $1`;
+    const whereConditions: string[] = [];
+
+    if (categoryId) {
+      whereConditions.push(`t.category_id = $${queryParams.length + 1}`);
+      queryParams.push(categoryId);
+    }
+
+    if (threadId) {
+      whereConditions.push(`t.id = $${queryParams.length + 1}`);
       queryParams.push(threadId);
+    }
+
+    if (userId) {
+      whereConditions.push(`t.user_id = $${queryParams.length + 1}`);
+      queryParams.push(userId);
+    }
+
+    if (whereConditions.length > 0) {
+      query += ` WHERE ${whereConditions.join(" AND ")}`;
     }
 
     query += `
       GROUP BY t.id, u.username, c.name
-      ORDER BY t.updated_at DESC
+      ORDER BY t.created_at DESC
       LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}
     `;
 
@@ -74,6 +88,16 @@ export async function POST(request: NextRequest) {
 
     const threadId = result.rows[0].thread_id;
     const slug = slugify(title);
+
+    // Increment the threads_count on the users table
+    await database.query({
+      text: `
+        UPDATE users
+        SET threads_count = threads_count + 1
+        WHERE id = $1
+      `,
+      values: [userId],
+    });
 
     return NextResponse.json({ threadId, slug }, { status: 201 });
   } catch (error) {

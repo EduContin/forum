@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 // Mock the fetch function
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
@@ -24,23 +26,20 @@ describe("Shoutbox POST API", () => {
 
     mockFetch.mockResolvedValue(mockResponse);
 
-    const response = await fetch(
-      "http://localhost:3000/api/v1/shoutbox/history",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newMessage),
+    const response = await fetch(apiUrl + "/api/v1/shoutbox/history", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(newMessage),
+    });
 
     const result = await response.json();
 
     expect(response.status).toBe(200);
     expect(result).toEqual({ message: "Message stored successfully" });
     expect(mockFetch).toHaveBeenCalledWith(
-      "http://localhost:3000/api/v1/shoutbox/history",
+      apiUrl + "/api/v1/shoutbox/history",
       expect.objectContaining({
         method: "POST",
         headers: {
@@ -60,7 +59,7 @@ describe("Shoutbox POST API", () => {
     mockFetch.mockRejectedValue(new Error("Database error"));
 
     await expect(
-      fetch("http://localhost:3000/api/v1/shoutbox/history", {
+      fetch(apiUrl + "/api/v1/shoutbox/history", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

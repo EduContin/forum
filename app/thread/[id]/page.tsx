@@ -1,8 +1,9 @@
 import React from "react";
 import Thread from "@/components/Thread";
 
+const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 async function getThread(threadId: string) {
-  const apiUrl = "http://localhost:3000";
   const response = await fetch(
     `${apiUrl}/api/v1/threads?threadId=${threadId}`,
     { cache: "no-store" },
@@ -15,7 +16,6 @@ async function getThread(threadId: string) {
 }
 
 async function getPosts(threadId: string) {
-  const apiUrl = "http://localhost:3000";
   const response = await fetch(`${apiUrl}/api/v1/posts?threadId=${threadId}`, {
     cache: "no-store",
   });

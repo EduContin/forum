@@ -11,7 +11,7 @@ export async function GET(
 
   try {
     const result = await database.query({
-      text: "SELECT id, username, email, created_at, avatar_url, bio, user_group, threads_count, posts_count, likes_received, reputation, vouches, last_seen FROM users WHERE LOWER(username) = LOWER($1)",
+      text: "SELECT id, username, email, created_at, avatar_url, bio, user_group, threads_count, posts_count, likes_received, reputation, vouches, last_seen, signature, caution, banned, referral_code, referred_by, affiliate_balance FROM users WHERE LOWER(username) = LOWER($1)",
       values: [username],
     });
 

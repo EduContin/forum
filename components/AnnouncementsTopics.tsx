@@ -25,7 +25,15 @@ const StickyTopics = () => {
           <li key={topic.id} className="bg-gray-900 p-4 rounded">
             <div className="font-semibold">{topic.title}</div>
             <div className="text-sm text-gray-500">
-              Posted by {topic.author} | Last activity: {topic.lastActivity}
+              Posted by
+              <a
+                href={`/users/${topic.author}`}
+                className="font-semibold text-gray-300"
+              >
+                {" "}
+                {topic.author}{" "}
+              </a>{" "}
+              | Last activity: {topic.lastActivity}
             </div>
           </li>
         ))}

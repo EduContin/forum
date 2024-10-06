@@ -13,7 +13,7 @@ interface Thread {
 }
 
 async function getLatestThreads() {
-  const apiUrl = "http://localhost:3000";
+  const apiUrl = process.env.NEXT_PUBLIC_APP_URL;
   const response = await fetch(`${apiUrl}/api/v1/threads?page=1&pageSize=10`, {
     cache: "no-store",
   });
@@ -22,6 +22,36 @@ async function getLatestThreads() {
   }
   return response.json();
 }
+
+const limitTitle = (title: string, maxLength: number = 70): string => {
+  if (title.length > maxLength) {
+    return title.slice(0, maxLength - 3) + "...";
+  }
+  return title;
+};
+
+const timeSinceLastActivity = (lastActivity: string): string => {
+  const now = new Date();
+  const lastActivityTime = new Date(lastActivity);
+  const delta = now.getTime() - lastActivityTime.getTime();
+
+  const minutes = Math.floor(delta / 60000);
+  const hours = Math.floor(delta / 3600000);
+  const days = Math.floor(delta / 86400000);
+  const months = Math.floor(days / 30);
+
+  if (months >= 1) {
+    return `${months} month${months > 1 ? "s" : ""} ago`;
+  } else if (days >= 1) {
+    return `${days} day${days > 1 ? "s" : ""} ago`;
+  } else if (hours >= 1) {
+    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  } else if (minutes >= 1) {
+    return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+  } else {
+    return "just now";
+  }
+};
 
 function RecentTopics() {
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -44,10 +74,8 @@ function RecentTopics() {
 
     fetchThreads();
 
-    // Set up an interval to fetch threads every 30 seconds
     const intervalId = setInterval(fetchThreads, 30000);
 
-    // Clean up the interval when the component unmounts
     return () => clearInterval(intervalId);
   }, []);
 
@@ -67,17 +95,34 @@ function RecentTopics() {
           <li key={thread.id} className="bg-gray-900 p-4 rounded shadow">
             <a
               href={`/thread/${slugify(thread.title)}-${thread.id}`}
-              className="font-semibold"
+              className="font-semibold truncate"
+              title={thread.title}
             >
-              {thread.title}
+              {limitTitle(thread.title)}
             </a>
             <div className="text-sm text-gray-500">
-              By {thread.username} | Last activity:{" "}
-              {new Date(thread.last_post_at).toLocaleString()}
+              By
+              <a
+                href={`/users/${thread.username}`}
+                className="font-semibold text-gray-300"
+              >
+                {" "}
+                {thread.username}{" "}
+              </a>
+              | Last activity: {timeSinceLastActivity(thread.last_post_at)}
             </div>
           </li>
         ))}
       </ul>
+      <style jsx>{`
+        .truncate {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 100%;
+          display: block;
+        }
+      `}</style>
     </div>
   );
 }

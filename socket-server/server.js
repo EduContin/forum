@@ -8,13 +8,13 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: process.env.NEXT_PUBLIC_APP_URL,
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
-const MAX_MESSAGE_LENGTH = 300;
+const MAX_MESSAGE_LENGTH = 600;
 
 // Rate limiter configuration
 const rateLimiter = new RateLimiterMemory({

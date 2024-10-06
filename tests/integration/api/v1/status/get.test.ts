@@ -1,12 +1,14 @@
 import { beforeAll, expect, test } from "vitest";
 import orchestrator from "tests/orchestrator";
 
+const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
 });
 
 test("GET to /api/v1/status should return 200", async () => {
-  const response = await fetch("http://localhost:3000/api/v1/status");
+  const response = await fetch(apiUrl + "/api/v1/status");
 
   expect(response.status).toBe(200);
 
