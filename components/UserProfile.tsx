@@ -423,6 +423,8 @@ export default function UserProfile({
                       <Image
                         src={`/badges/${award.name}`}
                         alt={award.name.slice(0, -4)}
+                        height={10}
+                        width={10}
                         className="w-full h-full object-contain"
                         title={award.name.slice(0, -4)}
                       />

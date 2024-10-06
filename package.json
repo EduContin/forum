@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npm run services:up && npm run wait-for-postgres && npm run migration:up && next dev",
+    "dev": "npm run services:up && npm run wait-for-postgres && npm run migration:up && npm run setup-admin && next dev",
     "services:up": "docker compose -f infra/compose.yaml up -d",
     "services:stop": "docker compose -f infra/compose.yaml stop",
     "services:down": "docker compose -f infra/compose.yaml down",
@@ -15,9 +15,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "setup-admin": "tsx --env-file=.env.development infra/scripts/setupAdmin.ts",
     "migration:create": "node-pg-migrate -m infra/migrations create",
     "migration:up": "node-pg-migrate -m infra/migrations up --envPath .env.development",
-    "wait-for-postgres": "node infra/scripts/wait-for-postgres.ts"
+    "wait-for-postgres": "ts-node infra/scripts/wait-for-postgres.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.13.0",
@@ -67,6 +68,7 @@
     "postcss": "^8",
     "prettier": "^3.3.2",
     "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5",
     "vitest": "^1.6.0"
   }

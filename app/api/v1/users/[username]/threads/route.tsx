@@ -60,17 +60,29 @@ export async function GET(
       values: [userId, limit, offset],
     });
 
-    const threads = result.rows.map((thread) => ({
-      id: thread.id,
-      title: thread.title,
-      username: thread.username,
-      category_name: thread.category_name,
-      post_count: parseInt(thread.post_count),
-      last_post_at: thread.last_post_at,
-      view_count: thread.view_count,
-      status: thread.status,
-      first_post_likes: parseInt(thread.first_post_likes),
-    }));
+    const threads = result.rows.map(
+      (thread: {
+        id: any;
+        title: any;
+        username: any;
+        category_name: any;
+        post_count: string;
+        last_post_at: any;
+        view_count: any;
+        status: any;
+        first_post_likes: string;
+      }) => ({
+        id: thread.id,
+        title: thread.title,
+        username: thread.username,
+        category_name: thread.category_name,
+        post_count: parseInt(thread.post_count),
+        last_post_at: thread.last_post_at,
+        view_count: thread.view_count,
+        status: thread.status,
+        first_post_likes: parseInt(thread.first_post_likes),
+      }),
+    );
 
     return NextResponse.json({
       threads,

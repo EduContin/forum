@@ -4,13 +4,13 @@ const { exec } = require("child_process");
 const command = "docker exec postgres-dev pg_isready --host localhost";
 
 // Sleeps for 1 second
-function sleep(ms) {
+function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 sleep(1000);
 
-function checkPostgres() {
-  exec(command, (error, stdout) => {
+function checkPostgres(): void {
+  exec(command, (error: Error | null, stdout: string) => {
     if (stdout.search("accepting connections") === -1) {
       process.stdout.write(".");
       checkPostgres();

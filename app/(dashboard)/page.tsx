@@ -1,73 +1,50 @@
+"use client";
+
 import React from "react";
-import { getServerSession } from "next-auth/next";
-import { redirect } from "next/navigation";
-import { Alert, Button, CircularProgress } from "@mui/material";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { CircularProgress } from "@mui/material";
 import ForumSummary from "@/components/ForumSummary";
 import StickyTopics from "@/components/AnnouncementsTopics";
 import RecentTopics from "@/components/RecentTopics";
 import AnimatedDashboard from "@/components/AnimatedDashboard";
 import MountainBackground from "@/components/MountainBackground";
 import Shoutbox from "@/components/Shoutbox";
-import SessionProviderClient from "@/components/SessionProviderClient";
 
-export default async function ForumDashboard() {
-  let session = null;
-  let error = null;
+export default function ForumDashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  try {
-    session = await getServerSession();
-    if (!session) {
-      redirect("/login");
-    }
-  } catch (err) {
-    console.error("Error fetching session:", err);
-    error = "An error occurred. Please try again.";
+  if (status === "loading") {
+    return <CircularProgress />;
   }
 
-  if (error) {
-    return (
-      <div className="flex flex-col justify-center items-center h-screen">
-        <Alert severity="error" className="mb-4">
-          {error}
-        </Alert>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => window.location.reload()}
-        >
-          Retry
-        </Button>
-      </div>
-    );
+  if (status === "unauthenticated") {
+    router.push("/login");
+    return null;
   }
 
   return (
-    <SessionProviderClient session={session}>
-      <div className="min-h-screen text-white relative">
-        <MountainBackground isLoading={false} isSuccess={false} />
-        {session ? (
-          <div className="container mx-auto px-4 py-8 relative z-10">
-            <AnimatedDashboard>
-              <h1 className="text-4xl font-bold mb-8 text-center">
-                Welcome, {session.user?.name}
-              </h1>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-                <div className="lg:col-span-2">
-                  <Shoutbox />
-                  <ForumSummary />
-                </div>
-                <div>
-                  <StickyTopics />
-                  <RecentTopics />
-                </div>
-              </div>
-              <div className="flex justify-between"></div>
-            </AnimatedDashboard>
+    <div className="min-h-screen text-white relative">
+      <MountainBackground isLoading={false} isSuccess={false} />
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        <AnimatedDashboard>
+          <h1 className="text-4xl font-bold mb-8 text-center">
+            Welcome, {session?.user?.name}
+          </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+            <div className="lg:col-span-2">
+              <Shoutbox />
+              <ForumSummary />
+            </div>
+            <div>
+              <StickyTopics />
+              <RecentTopics />
+            </div>
           </div>
-        ) : (
-          <CircularProgress />
-        )}
+          <div className="flex justify-between"></div>
+        </AnimatedDashboard>
       </div>
-    </SessionProviderClient>
+    </div>
   );
 }

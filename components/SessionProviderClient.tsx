@@ -1,3 +1,4 @@
+// components/SessionProviderClient.tsx
 "use client";
 import { SessionProvider } from "next-auth/react";
 import React from "react";
@@ -7,7 +8,7 @@ export default function SessionProviderClient({
   session,
 }: {
   children: React.ReactNode;
-  session: any;
+  session?: any; // Make session optional
 }) {
   return <SessionProvider session={session}>{children}</SessionProvider>;
 }

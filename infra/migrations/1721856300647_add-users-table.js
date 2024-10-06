@@ -1,5 +1,3 @@
-const bcrypt = require("bcrypt");
-
 /**
  * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
  */
@@ -66,27 +64,6 @@ exports.up = async (pgm) => {
   pgm.createIndex("user_reputations", ["user_id", "voter_id"], {
     unique: true,
   });
-
-  // Hash the password
-  const hashedPassword = await bcrypt.hash("Test123@#", 10);
-
-  // Insert an admin user with hashed password
-  pgm.sql(`
-    INSERT INTO users (username, email, password, user_group, created_at)
-    VALUES ('admin', 'admin@example.com', '${hashedPassword}', 'Admin', current_timestamp);
-  `);
-
-  // Insert a regular user with hashed password
-  pgm.sql(`
-    INSERT INTO users (username, email, password, user_group, created_at)
-    VALUES ('Test', 'test@example.com', '${hashedPassword}', 'Member', current_timestamp);
-  `);
-
-  // Insert an banned user with hashed password
-  pgm.sql(`
-    INSERT INTO users (username, email, password, user_group, created_at, banned)
-    VALUES ('banned', 'banned@example.com', '${hashedPassword}', 'Member', current_timestamp, true);
-  `);
 };
 
 /**

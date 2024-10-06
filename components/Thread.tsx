@@ -23,6 +23,7 @@ interface Post {
 }
 
 interface User {
+  credits: number;
   banned: any;
   id: number;
   username: string;
@@ -72,6 +73,12 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
 
   const MAX_CHARACTERS = 5000; // Set the maximum character limit
   const CHARACTERS_PER_LINE = 1000; // Set the number of characters per line
+
+  useEffect(() => {
+    if (!thread || !thread.title) {
+      router.push("/");
+    }
+  }, [thread, router]);
 
   const handleDeletePost = async (postId: number) => {
     if (!isAdmin) return;
@@ -325,8 +332,9 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
     };
 
     const fetchUsers = async () => {
-      const usernames = new Set(posts.map((post) => post.username));
-      for (const username of usernames) {
+      const usernames = Array.from(new Set(posts.map((post) => post.username)));
+      for (let i = 0; i < usernames.length; i++) {
+        const username = usernames[i];
         try {
           const response = await fetch(`/api/v1/users/${username}`);
           if (response.ok) {
@@ -341,7 +349,8 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
 
     fetchLikes();
     fetchUsers();
-  }, [session, initialPosts, posts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const fetchSignature = async () => {
@@ -597,268 +606,270 @@ const Thread: React.FC<ThreadProps> = ({ thread, posts: initialPosts }) => {
 
   return (
     <SessionProviderClient session={session}>
-      <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 mb-2">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">{thread.title}</h2>
-          {isAdmin && (
-            <button
-              onClick={handleDeleteThread}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
-            >
-              Delete Thread
-            </button>
-          )}
-        </div>
-        <p className="text-sm text-gray-400 mb-4">
-          Posted by
-          <a href={`/users/${thread.username}`}> {thread.username} </a>
-          in {thread.category_name} on{" "}
-          {new Date(thread.created_at).toLocaleString()}
-        </p>
-        <div className="space-y-4">
-          {posts.map((post) => (
-            <div key={post.id} className="flex">
-              <div className=" pr-4">{renderUserProfile(post.username)}</div>
-              <div className="w-5/6">
-                <div className="rounded-lg p-4 bg-gray-700/50 overflow-hidden">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-400">
-                      {new Date(post.created_at).toLocaleString()}
-                    </span>
-                    {isAdmin && !post.is_deleted && (
-                      <button
-                        onClick={() => handleDeletePost(post.id)}
-                        className="px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
-                      >
-                        Delete Post
-                      </button>
-                    )}
-                  </div>
-                  <div className="whitespace-pre-wrap overflow-wrap-break-word word-break-break-word max-w-full">
-                    {post.is_deleted ? (
-                      <div className="flex items-center space-x-2 text-gray-500 italic">
-                        <FaTrashAlt className="text-red-500" />
-                        <span>This content was deleted by a moderator</span>
-                      </div>
-                    ) : (
-                      renderContentWithEmojisAndBBCode(post.content)
-                    )}
-                  </div>
-                  {!post.is_deleted && (
-                    <div className="mt-2 flex items-center">
-                      <button
-                        onClick={() => handleLike(post.id)}
-                        className={`flex items-center space-x-1 ${
-                          post.is_liked_by_user
-                            ? "text-blue-500"
-                            : "text-gray-400"
-                        } hover:text-blue-500 transition-colors`}
-                        disabled={!session || !session.user}
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
+      {thread && thread.title ? (
+        <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 mb-2">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">{thread.title}</h2>
+            {isAdmin && (
+              <button
+                onClick={handleDeleteThread}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
+              >
+                Delete Thread
+              </button>
+            )}
+          </div>
+          <p className="text-sm text-gray-400 mb-4">
+            Posted by
+            <a href={`/users/${thread.username}`}> {thread.username} </a>
+            in {thread.category_name} on{" "}
+            {new Date(thread.created_at).toLocaleString()}
+          </p>
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <div key={post.id} className="flex">
+                <div className=" pr-4">{renderUserProfile(post.username)}</div>
+                <div className="w-5/6">
+                  <div className="rounded-lg p-4 bg-gray-700/50 overflow-hidden">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-400">
+                        {new Date(post.created_at).toLocaleString()}
+                      </span>
+                      {isAdmin && !post.is_deleted && (
+                        <button
+                          onClick={() => handleDeletePost(post.id)}
+                          className="px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
                         >
-                          <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                        </svg>
-                        <span>{post.likes_count}</span>
-                      </button>
+                          Delete Post
+                        </button>
+                      )}
+                    </div>
+                    <div className="whitespace-pre-wrap overflow-wrap-break-word word-break-break-word max-w-full">
+                      {post.is_deleted ? (
+                        <div className="flex items-center space-x-2 text-gray-500 italic">
+                          <FaTrashAlt className="text-red-500" />
+                          <span>This content was deleted by a moderator</span>
+                        </div>
+                      ) : (
+                        renderContentWithEmojisAndBBCode(post.content)
+                      )}
+                    </div>
+                    {!post.is_deleted && (
+                      <div className="mt-2 flex items-center">
+                        <button
+                          onClick={() => handleLike(post.id)}
+                          className={`flex items-center space-x-1 ${
+                            post.is_liked_by_user
+                              ? "text-blue-500"
+                              : "text-gray-400"
+                          } hover:text-blue-500 transition-colors`}
+                          disabled={!session || !session.user}
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+                          </svg>
+                          <span>{post.likes_count}</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {!post.is_deleted && users[post.username]?.signature && (
+                    <div className="mt-4 bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto">
+                      <h3 className="text-lg font-semibold">User Signature:</h3>
+                      <div className="overflow-wrap-break-word word-break-break-word max-w-full">
+                        {renderContentWithEmojisAndBBCode(
+                          users[post.username].signature,
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
-                {!post.is_deleted && users[post.username]?.signature && (
-                  <div className="mt-4 bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto">
-                    <h3 className="text-lg font-semibold">User Signature:</h3>
-                    <div className="overflow-wrap-break-word word-break-break-word max-w-full">
-                      {renderContentWithEmojisAndBBCode(
-                        users[post.username].signature,
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
-            </div>
-          ))}
-        </div>
-        {session && session.user ? (
-          <form onSubmit={handleReplySubmit} className="mt-4">
-            <div className="relative">
-              <div className="mb-2 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => insertTextStyle("[b]", "[/b]")}
-                  className="px-2 py-1 bg-gray-600 text-white rounded"
-                >
-                  B
-                </button>
-                <button
-                  type="button"
-                  onClick={() => insertTextStyle("[i]", "[/i]")}
-                  className="px-2 py-1 bg-gray-600 text-white rounded"
-                >
-                  I
-                </button>
-                <button
-                  type="button"
-                  onClick={() => insertTextStyle("[u]", "[/u]")}
-                  className="px-2 py-1 bg-gray-600 text-white rounded"
-                >
-                  U
-                </button>
-                <button
-                  type="button"
-                  onClick={() => insertTextStyle("[s]", "[/s]")}
-                  className="px-2 py-1 bg-gray-600 text-white rounded"
-                >
-                  S
-                </button>
-                <input
-                  type="color"
-                  value={selectedColor}
-                  onChange={(e) => handleColorChange(e.target.value)}
-                  className="w-8 h-8 rounded cursor-pointer"
-                />
-                <select
-                  value={selectedFontSize}
-                  onChange={(e) => handleFontSizeChange(e.target.value)}
-                  className="px-2 py-1 bg-gray-600 text-white rounded"
-                >
-                  <option value="small">Small</option>
-                  <option value="medium">Medium</option>
-                  <option value="large">Large</option>
-                </select>
-                <select
-                  onChange={(e) =>
-                    insertTextStyle(`[align=${e.target.value}]`, "[/align]")
-                  }
-                  className="px-2 py-1 bg-gray-600 text-white rounded"
-                >
-                  <option value="left">Left</option>
-                  <option value="center">Center</option>
-                  <option value="right">Right</option>
-                </select>
-                <button
-                  type="button"
-                  onClick={() => insertTextStyle("[quote]", "[/quote]")}
-                  className="px-2 py-1 bg-gray-600 text-white rounded"
-                >
-                  Quote
-                </button>
-                <button
-                  type="button"
-                  onClick={() => insertTextStyle("[code]", "[/code]")}
-                  className="px-2 py-1 bg-gray-600 text-white rounded"
-                >
-                  Code
-                </button>
-                <button
-                  type="button"
-                  onClick={insertImage}
-                  className="px-2 py-1 bg-gray-600 text-white rounded"
-                >
-                  Image
-                </button>
-                <button
-                  type="button"
-                  onClick={insertLink}
-                  className="px-2 py-1 bg-gray-600 text-white rounded"
-                >
-                  Link
-                </button>
-                <button
-                  type="button"
-                  onClick={() => insertTextStyle("[hidden]", "[/hidden]")}
-                  className="px-2 py-1 bg-gray-600 text-white rounded"
-                >
-                  Hidden
-                </button>
-                <button
-                  type="button"
-                  onClick={() => insertTextStyle("[spoiler]", "[/spoiler]")}
-                  className="px-2 py-1 bg-gray-600 text-white rounded"
-                >
-                  Spoiler
-                </button>
-              </div>
-              <textarea
-                id="content"
-                ref={textareaRef}
-                value={content}
-                onChange={(e) => updateContent(e.target.value)}
-                onSelect={() => {
-                  if (textareaRef.current) {
-                    setSelectionRange([
-                      textareaRef.current.selectionStart,
-                      textareaRef.current.selectionEnd,
-                    ]);
-                  }
-                }}
-                className="w-full px-3 py-2 pr-10 bg-gray-700/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                rows={5}
-                required
-              />
-              <div className="text-sm text-gray-400 mt-1">
-                {content.length}/{MAX_CHARACTERS} characters
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="absolute top-12 right-2 p-1.5 pl-2 pr-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 focus:outline-none transition-colors"
-              >
-                😀
-              </button>
-            </div>
-            {showEmojiPicker && (
-              <div className="relative ml-10 right-6 mt-2 p-2 bg-gray-700 rounded-md z-10">
-                {Object.keys(customEmojis).map((emoji) => (
-                  <span
-                    key={emoji}
-                    onClick={() => handleEmojiClick(emoji)}
-                    className="inline-block m-1 p-1 hover:bg-gray-600 rounded cursor-pointer"
+            ))}
+          </div>
+          {session && session.user ? (
+            <form onSubmit={handleReplySubmit} className="mt-4">
+              <div className="relative">
+                <div className="mb-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => insertTextStyle("[b]", "[/b]")}
+                    className="px-2 py-1 bg-gray-600 text-white rounded"
                   >
-                    <Image
-                      src={customEmojis[emoji]}
-                      alt={emoji}
-                      width={20}
-                      height={20}
-                    />
-                  </span>
-                ))}
-              </div>
-            )}
-            <div className="mb-4">
-              <button
-                type="button"
-                onClick={() => setShowPreview(!showPreview)}
-                className="px-4 mt-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              >
-                {showPreview ? "Hide Preview" : "Show Preview"}
-              </button>
-            </div>
-            {showPreview && (
-              <div className="mb-4">
-                <h3 className="text-xl font-bold mb-2">Preview:</h3>
-                <div
-                  className="bg-gray-700/50 rounded-md p-4 whitespace-pre-wrap overflow-wrap-break-word word-break-break-word max-w-full"
-                  dangerouslySetInnerHTML={{ __html: formatContent(content) }}
+                    B
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertTextStyle("[i]", "[/i]")}
+                    className="px-2 py-1 bg-gray-600 text-white rounded"
+                  >
+                    I
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertTextStyle("[u]", "[/u]")}
+                    className="px-2 py-1 bg-gray-600 text-white rounded"
+                  >
+                    U
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertTextStyle("[s]", "[/s]")}
+                    className="px-2 py-1 bg-gray-600 text-white rounded"
+                  >
+                    S
+                  </button>
+                  <input
+                    type="color"
+                    value={selectedColor}
+                    onChange={(e) => handleColorChange(e.target.value)}
+                    className="w-8 h-8 rounded cursor-pointer"
+                  />
+                  <select
+                    value={selectedFontSize}
+                    onChange={(e) => handleFontSizeChange(e.target.value)}
+                    className="px-2 py-1 bg-gray-600 text-white rounded"
+                  >
+                    <option value="small">Small</option>
+                    <option value="medium">Medium</option>
+                    <option value="large">Large</option>
+                  </select>
+                  <select
+                    onChange={(e) =>
+                      insertTextStyle(`[align=${e.target.value}]`, "[/align]")
+                    }
+                    className="px-2 py-1 bg-gray-600 text-white rounded"
+                  >
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => insertTextStyle("[quote]", "[/quote]")}
+                    className="px-2 py-1 bg-gray-600 text-white rounded"
+                  >
+                    Quote
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertTextStyle("[code]", "[/code]")}
+                    className="px-2 py-1 bg-gray-600 text-white rounded"
+                  >
+                    Code
+                  </button>
+                  <button
+                    type="button"
+                    onClick={insertImage}
+                    className="px-2 py-1 bg-gray-600 text-white rounded"
+                  >
+                    Image
+                  </button>
+                  <button
+                    type="button"
+                    onClick={insertLink}
+                    className="px-2 py-1 bg-gray-600 text-white rounded"
+                  >
+                    Link
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertTextStyle("[hidden]", "[/hidden]")}
+                    className="px-2 py-1 bg-gray-600 text-white rounded"
+                  >
+                    Hidden
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertTextStyle("[spoiler]", "[/spoiler]")}
+                    className="px-2 py-1 bg-gray-600 text-white rounded"
+                  >
+                    Spoiler
+                  </button>
+                </div>
+                <textarea
+                  id="content"
+                  ref={textareaRef}
+                  value={content}
+                  onChange={(e) => updateContent(e.target.value)}
+                  onSelect={() => {
+                    if (textareaRef.current) {
+                      setSelectionRange([
+                        textareaRef.current.selectionStart,
+                        textareaRef.current.selectionEnd,
+                      ]);
+                    }
+                  }}
+                  className="w-full px-3 py-2 pr-10 bg-gray-700/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  rows={5}
+                  required
                 />
+                <div className="text-sm text-gray-400 mt-1">
+                  {content.length}/{MAX_CHARACTERS} characters
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  className="absolute top-12 right-2 p-1.5 pl-2 pr-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 focus:outline-none transition-colors"
+                >
+                  😀
+                </button>
               </div>
-            )}
+              {showEmojiPicker && (
+                <div className="relative ml-10 right-6 mt-2 p-2 bg-gray-700 rounded-md z-10">
+                  {Object.keys(customEmojis).map((emoji) => (
+                    <span
+                      key={emoji}
+                      onClick={() => handleEmojiClick(emoji)}
+                      className="inline-block m-1 p-1 hover:bg-gray-600 rounded cursor-pointer"
+                    >
+                      <Image
+                        src={customEmojis[emoji]}
+                        alt={emoji}
+                        width={20}
+                        height={20}
+                      />
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="mb-4">
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="px-4 mt-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  {showPreview ? "Hide Preview" : "Show Preview"}
+                </button>
+              </div>
+              {showPreview && (
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold mb-2">Preview:</h3>
+                  <div
+                    className="bg-gray-700/50 rounded-md p-4 whitespace-pre-wrap overflow-wrap-break-word word-break-break-word max-w-full"
+                    dangerouslySetInnerHTML={{ __html: formatContent(content) }}
+                  />
+                </div>
+              )}
 
-            <button
-              type="submit"
-              className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              Submit Reply
-            </button>
-          </form>
-        ) : (
-          <p className="mt-4 text-gray-400">
-            Please log in to reply to this thread.
-          </p>
-        )}
-      </div>
+              <button
+                type="submit"
+                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                Submit Reply
+              </button>
+            </form>
+          ) : (
+            <p className="mt-4 text-gray-400">
+              Please log in to reply to this thread.
+            </p>
+          )}
+        </div>
+      ) : null}
     </SessionProviderClient>
   );
 };
