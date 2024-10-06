@@ -1,7 +1,7 @@
 import { Client } from "pg";
 
 async function query(queryObject: any) {
-  let client;
+  let client: Client | undefined;
 
   try {
     client = await getNewClient();
@@ -11,7 +11,13 @@ async function query(queryObject: any) {
     console.error(error);
     throw error;
   } finally {
-    await client.end();
+    if (client) {
+      try {
+        await client.end();
+      } catch (endError) {
+        console.error("Error closing client connection:", endError);
+      }
+    }
   }
 }
 
@@ -39,11 +45,16 @@ const database = {
 export default database;
 
 function getSSLValues() {
-  if (process.env.POSTGRES_CA) {
-    return {
-      ca: process.env.POSTGRES_CA,
-    };
+  if (process.env.NODE_ENV === "production") {
+    console.log("In production.. trying to get SSL values");
+    if (process.env.POSTGRES_CA) {
+      console.log("SSL values found");
+      return {
+        ca: process.env.POSTGRES_CA,
+      };
+    }
+    console.log("No SSL values found");
+    return false;
   }
-
-  return process.env.NODE_ENV === "production" ? true : false;
+  return false;
 }

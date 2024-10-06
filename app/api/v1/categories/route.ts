@@ -1,11 +1,14 @@
-// pages/api/v1/categories/[slug].ts
-
 import database from "@/infra/database";
-import { NextApiRequest } from "next";
+import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-export async function GET(req: NextApiRequest) {
-  const { slug } = req.query;
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
+  const slug = url.searchParams.get("slug");
+
+  if (!slug) {
+    return NextResponse.json({ error: "Slug is required" }, { status: 400 });
+  }
 
   try {
     const categoryQuery = `
