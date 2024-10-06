@@ -19,9 +19,8 @@ async function runMigrations(shouldDryRun: boolean) {
       dryRun: shouldDryRun,
       verbose: true,
       migrationsTable: "pgmigrations",
+      singleTransaction: false,
     });
-
-    console.log("DATABASE_URL: ", process.env.DATABASE_URL);
 
     // Assuming migrationsResult contains information to determine if migrations were run
     const migrationsRan = migrationsResult.length > 0;
@@ -37,6 +36,7 @@ async function runMigrations(shouldDryRun: boolean) {
 
 export async function GET() {
   const { migrationsResult } = await runMigrations(true);
+  console.log(migrationsResult);
   // Return 201 if migrations ran, otherwise 200
   return new Response(JSON.stringify(migrationsResult), {
     status: 200,

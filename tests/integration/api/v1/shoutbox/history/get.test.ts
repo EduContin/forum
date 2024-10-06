@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const apiUrl = process.env.NEXT_PUBLIC_APP_URL;
+
 describe("Shoutbox GET API", () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -28,23 +30,21 @@ describe("Shoutbox GET API", () => {
 
     global.fetch = vi.fn().mockResolvedValue(mockResponse);
 
-    const response = await fetch(
-      "http://localhost:3000/api/v1/shoutbox/history",
-    );
+    const response = await fetch(apiUrl + "/api/v1/shoutbox/history");
     const result = await response.json();
 
     expect(response.status).toBe(200);
     expect(result).toEqual({ rows: mockMessages });
     expect(global.fetch).toHaveBeenCalledWith(
-      "http://localhost:3000/api/v1/shoutbox/history",
+      apiUrl + "/api/v1/shoutbox/history",
     );
   });
 
   it("should handle errors gracefully", async () => {
     global.fetch = vi.fn().mockRejectedValue(new Error("Database error"));
 
-    await expect(
-      fetch("http://localhost:3000/api/v1/shoutbox/history"),
-    ).rejects.toThrow("Database error");
+    await expect(fetch(apiUrl + "/api/v1/shoutbox/history")).rejects.toThrow(
+      "Database error",
+    );
   });
 });

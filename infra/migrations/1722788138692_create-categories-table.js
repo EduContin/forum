@@ -1,5 +1,13 @@
-// migrations/YYYYMMDDHHMMSS_create_forum_structure.js
+/**
+ * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
+ */
+exports.shorthands = undefined;
 
+/**
+ * @param pgm {import('node-pg-migrate').MigrationBuilder}
+ * @param run {() => void | undefined}
+ * @returns {Promise<void> | void}
+ */
 exports.up = async (pgm) => {
   // Create sections table
   pgm.createTable("sections", {
@@ -84,9 +92,10 @@ exports.up = async (pgm) => {
   });
 };
 
-exports.down = (pgm) => {
-  pgm.dropTable("category_tags");
-  pgm.dropTable("tags");
-  pgm.dropTable("categories");
-  pgm.dropTable("sections");
-};
+/**
+ * @param pgm {import('node-pg-migrate').MigrationBuilder}
+ * @param run {() => void | undefined}
+ * @returns {Promise<void> | void}
+ */
+// eslint-disable-next-line no-unused-vars
+exports.down = (pgm) => {};
