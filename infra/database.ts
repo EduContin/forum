@@ -51,6 +51,7 @@ function getSSLValues() {
       console.log("SSL values found");
       return {
         ca: process.env.POSTGRES_CA,
+        rejectUnauthorized: false,
       };
     }
     console.log("No SSL values found");
