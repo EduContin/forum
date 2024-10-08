@@ -37,3 +37,4 @@ next-env.d.ts
 
 # Socket server
 socket-server/node_modules
+.env

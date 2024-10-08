@@ -7,7 +7,9 @@ import customEmojis from "@/models/custom-emojis";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 
-const ErrorBoundary = dynamic(() => import("@/components/ErrorBoundary"));
+const ErrorBoundary = dynamic(() => import("@/components/ErrorBoundary"), {
+  ssr: false,
+});
 
 const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -34,9 +36,9 @@ export default function UserProfile({
   // TODO: Implement awards system API retrival
   const awards = [
     { name: "Diamond.svg" },
-    { name: "Diamond.svg" },
-    { name: "Diamond.svg" },
-    { name: "Diamond.svg" },
+    // { name: "Diamond.svg" },
+    // { name: "Diamond.svg" },
+    // { name: "Diamond.svg" },
     // Add more awards as needed
   ];
 
@@ -263,6 +265,8 @@ export default function UserProfile({
                     e.target.onerror = null;
                     e.target.src = "/winter_soldier.gif";
                   }}
+                  blurDataURL="/winter_soldier.gif"
+                  priority
                 />
               </motion.div>
               <motion.div
