@@ -26,6 +26,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
 
 # vercel
@@ -37,4 +38,3 @@ next-env.d.ts
 
 # Socket server
 socket-server/node_modules
-.env
