@@ -46,15 +46,12 @@ export default database;
 
 function getSSLValues() {
   if (process.env.NODE_ENV === "production") {
-    console.log("In production.. trying to get SSL values");
     if (process.env.POSTGRES_CA) {
-      console.log("SSL values found");
       return {
         ca: process.env.POSTGRES_CA,
         rejectUnauthorized: false,
       };
     }
-    console.log("No SSL values found");
     return false;
   }
   return false;
