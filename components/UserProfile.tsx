@@ -32,6 +32,7 @@ export default function UserProfile({
   const [userReputations, setReputations] = useState(0);
   const [userLikes, setUserLikes] = useState(0);
   const [userThreads, setUserThreads] = useState(0);
+  const [signature, setSignature] = useState(user.signature);
 
   // TODO: Implement awards system API retrival
   const awards = [
@@ -116,6 +117,7 @@ export default function UserProfile({
           setReputations(data.reputation);
           setUserLikes(data.likes_received);
           setUserThreads(data.threads_count);
+          setSignature(data.signature);
         } else {
           console.error("Failed to fetch user data");
         }
@@ -401,6 +403,7 @@ export default function UserProfile({
 
               {/* Signature (Ad Banner) */}
               <motion.section
+                key={Date.now()}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
@@ -410,7 +413,7 @@ export default function UserProfile({
                   Signature
                 </h2>
                 <div className="bg-gray-700 rounded-lg p-2 text-xs whitespace-pre-wrap">
-                  {renderContentWithEmojisAndBBCode(user.signature) ||
+                  {renderContentWithEmojisAndBBCode(signature) ||
                     "No signature set"}
                 </div>
               </motion.section>
