@@ -41,7 +41,11 @@ const ForumDashboard: React.FC<ForumDashboardProps> = () => {
   const router = useRouter();
 
   if (status === "loading") {
-    return <CircularProgress />;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <CircularProgress />
+      </div>
+    );
   }
 
   if (status === "unauthenticated") {
