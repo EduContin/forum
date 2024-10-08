@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
@@ -12,9 +12,9 @@ const Navbar: React.FC = () => {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleDropdownClick = (e: React.MouseEvent) => {
+  const handleDropdownClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-  };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -50,39 +50,35 @@ const Navbar: React.FC = () => {
     fetchAvatarUrl();
   }, [session]);
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+  const toggleDropdown = useCallback(() => {
+    setIsDropdownOpen((prev) => !prev);
+  }, []);
+
+  const navLinks = [
+    { href: "/", label: "Home" },
+    { href: "/upgrade", label: "Upgrade" },
+    { href: "/search", label: "Search" },
+    { href: "/games", label: "Games" },
+    { href: "/market", label: "Market" },
+    { href: "/mm", label: "MiddleMan" },
+    { href: "/affiliate", label: "Affiliate" },
+    { href: "/help", label: "Help" },
+  ];
 
   return (
     <div className="relative" ref={dropdownRef}>
       <nav className="bg-gray-800 text-white p-4">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex space-x-6">
-            <Link href="/" className="hover:text-blue-300 transition">
-              Home
-            </Link>
-            <Link href="/upgrade" className="hover:text-blue-300 transition">
-              Upgrade
-            </Link>
-            <Link href="/search" className="hover:text-blue-300 transition">
-              Search
-            </Link>
-            <Link href="/games" className="hover:text-blue-300 transition">
-              Games
-            </Link>
-            <Link href="/market" className="hover:text-blue-300 transition">
-              Market
-            </Link>
-            <Link href="/mm" className="hover:text-blue-300 transition">
-              MiddleMan
-            </Link>
-            <Link href="/affiliate" className="hover:text-blue-300 transition">
-              Affiliate
-            </Link>
-            <Link href="/help" className="hover:text-blue-300 transition">
-              Help
-            </Link>
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="hover:text-blue-300 transition"
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
 
           <div className="flex items-center space-x-4">
