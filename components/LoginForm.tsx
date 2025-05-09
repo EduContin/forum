@@ -1,61 +1,96 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, Button, Snackbar, IconButton } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
-import MountainBackground from "./MountainBackground";
+import dynamic from "next/dynamic";
+
+const DynamicMountainBackground = dynamic(
+  () => import("./MountainBackground"),
+  {
+    ssr: false,
+  },
+);
 
 export default function LoginForm() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  // eslint-disable-next-line no-unused-vars
+  const { data: session, status } = useSession();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    if (!username.trim() || !password.trim()) {
-      setError("Username and password are required");
-      setIsLoading(false);
-      return;
+  useEffect(() => {
+    if (status === "authenticated") {
+      window.location.href = "/";
     }
+  }, [status, router]);
 
-    try {
-      const response = (await signIn("credentials", {
-        username: username.trim(),
-        password: password.trim(),
-        redirect: false,
-      })) as unknown as {
-        ok: boolean;
-        json: () => Promise<{ message: string }>;
-      };
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    },
+    [],
+  );
 
-      if (response.ok) {
-        setIsSuccess(true);
-        router.push("/");
-      } else {
-        const data = await response.json();
-        setError(data.message || "Login failed");
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsLoading(true);
+      setError(null);
+
+      const { username, password } = formData;
+
+      if (!username.trim() || !password.trim()) {
+        setError("Username and password are required");
+        setIsLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      setError("An error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+      try {
+        const result = await signIn("credentials", {
+          username: username.trim(),
+          password: password.trim(),
+          redirect: false,
+        });
+
+        if (result?.error) {
+          setError("Login failed");
+        } else {
+          setIsSuccess(true);
+          // The useEffect hook will handle redirection
+        }
+      } catch (err) {
+        console.error("Login error:", err);
+        setError("An error occurred. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [formData],
+  );
+
+  const togglePasswordVisibility = useCallback(() => {
+    setShowPassword((prev) => !prev);
+  }, []);
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  if (status === "authenticated") {
+    return <div>Redirecting...</div>;
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
-      <MountainBackground isLoading={isLoading} isSuccess={isSuccess} />
+      <DynamicMountainBackground isLoading={isLoading} isSuccess={isSuccess} />
       <div className="relative z-10">
         <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
           <h1 className="text-4xl font-bold mb-8">Login</h1>
@@ -67,9 +102,10 @@ export default function LoginForm() {
             )}
             <input
               type="text"
+              name="username"
               placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={formData.username}
+              onChange={handleInputChange}
               className="w-full px-3 py-2 mb-4 border rounded"
               autoFocus
             />
@@ -77,13 +113,14 @@ export default function LoginForm() {
               <div className="flex items-center">
                 <input
                   type={showPassword ? "text" : "password"}
+                  name="password"
                   placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border rounded"
                 />
                 <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={togglePasswordVisibility}
                   className="ml-2"
                   style={{ color: "inherit" }}
                 >
@@ -103,8 +140,8 @@ export default function LoginForm() {
           </form>
           <p className="mt-4">
             Don&apos;t have an account?{" "}
-            <Link href="/register" legacyBehavior>
-              <a className="text-blue-500">Register</a>
+            <Link href="/register" className="text-blue-500">
+              Register
             </Link>
           </p>
         </main>

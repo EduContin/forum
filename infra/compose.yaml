@@ -6,9 +6,14 @@ services:
       - ../.env.development
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   socket-server:
     container_name: "socket-server"
     build: ../socket-server
     ports:
       - "4000:4000"
+
+volumes:
+  postgres_data:

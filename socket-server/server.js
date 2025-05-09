@@ -7,8 +7,9 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
+  path: "/socket.io",
   cors: {
-    origin: process.env.NEXT_PUBLIC_APP_URL,
+    origin: "https://alpened.io",
     methods: ["GET", "POST"],
     credentials: true,
   },

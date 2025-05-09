@@ -38,7 +38,10 @@ const Shoutbox = () => {
   useEffect(() => {
     const newSocket = io(
       process.env.NEXT_PUBLIC_SHOUTBOX_SOCKET || "http://localhost:4000",
-      { withCredentials: true },
+      {
+        withCredentials: true,
+        path: "/socket.io",
+      },
     );
     setSocket(newSocket);
 
